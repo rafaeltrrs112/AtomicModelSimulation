@@ -1,4 +1,6 @@
+import scala.collection.mutable.ArrayBuffer
+
 /**
- * State will
+ *
  */
-class State {}
+class State(var stateMap : scala.collection.mutable.Map[String, ArrayBuffer[SimulationToken]])

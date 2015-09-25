@@ -1,9 +1,9 @@
 /**
  * Model trait for the framework
  */
-abstract class Model {
+trait Model {
   //Create a getter for the state
-  abstract var currentState : State
+  var _currentState : State
   /**
    *
    * @param input
@@ -13,15 +13,8 @@ abstract class Model {
    *             state.
    *
    */
-  def insert(input : Input*)
-  /**
-   * State transition functions alters the state member of the
-   * model. A helper method will be used to set this function
-   * to the the one returned when makeTransitionFunction is called.
-   * @param input
-   *              Input into the model.
-   */
-  def transitionState(input : Input*) : Unit
+  def stateTransition(input : SimulationToken*)
+
   /**
    *
    * @return
