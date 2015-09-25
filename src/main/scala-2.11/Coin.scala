@@ -5,7 +5,7 @@
 /**
  * Some coin with a some currency value
  */
-trait Coin extends Input with SimulationToken {
+trait Coin extends SimulationToken {
   override val value : Int
 }
 /**
@@ -33,8 +33,8 @@ case class Quarter() extends Coin{
  * @param entry
  *             The value of the cancel input into the vending machine
  */
-case class Cancel(entry : Boolean) extends SimulationToken {
-  override val value: Boolean = entry
+case class Cancel(entry : Boolean) extends SimulationToken{
+  override val value: Boolean = true
 }
 case class Change(change : Seq[Coin])
 object Coin{

@@ -6,6 +6,7 @@
 trait SimulationToken{
   val value : AnyVal
 }
-trait Input extends SimulationToken {
-  val value : AnyVal
+case class Coffee() extends SimulationToken{
+  override val value = ()
+  override val toString = "Starbucks (C)"
 }
