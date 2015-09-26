@@ -15,7 +15,6 @@ object VendingMachine extends Model[Coin]{
   var playerPurse : Int = 0
   val coins = mutable.Map[String, ArrayBuffer[Coin]]()
 
-
   def currentState_=(stateInput : State[Coin]) : Unit = _currentState = stateInput
   def currentState = _currentState
 
@@ -44,7 +43,7 @@ object VendingMachine extends Model[Coin]{
    * state.
    */
   override def stateTransition(input: SimulationToken*){
-//    println(vendingMachinePurse)
+    println(vendingMachinePurse)
     input.foreach {
       case coin : Coin => {
         coin match {
@@ -63,10 +62,10 @@ object VendingMachine extends Model[Coin]{
         }
       }
     }
-//    println(vendingMachinePurse)
-//    println("Nickels " + nickels.size + " * 5 = " + nickels.size * 5)
-//    println("Dimes " + dimes.size + " * 10 = " + dimes.size * 10)
-//    println("Quarters " + quarters.size + " * 25 = " + quarters.size * 25)
+    println(vendingMachinePurse)
+    println("Nickels " + nickels.size + " * 5 = " + nickels.size * 5)
+    println("Dimes " + dimes.size + " * 10 = " + dimes.size * 10)
+    println("Quarters " + quarters.size + " * 25 = " + quarters.size * 25)
     processInput(input)
   }
 
@@ -76,6 +75,7 @@ object VendingMachine extends Model[Coin]{
    * Pair containing the output if any, and a state that will
    * always exits.
    */
+  //Output contains : MachinePurse, MachineCoins, PlayerMoney, Option[Seq[Coffee()]]
   override def outputAndView: (Option[Output], State[Coin]) = {
     null
   }
@@ -89,36 +89,30 @@ object VendingMachine extends Model[Coin]{
    */
   def processInput(input: Seq[SimulationToken]): Unit = {
     println(playerPurse + " cents entered")
-    val numberOfCoffees : Int = playerPurse / 100
-    var previousState : State[Coin] = new State(currentState.stateMap)
+    var previousState : State[Coin] = new State[Coin](currentState.stateMap)
     var nextState = {
+      val numberOfCoffees : Int = playerPurse / 100
       val dispenseCoffee : Boolean = playerPurse >= 100
-      playerPurse = if(dispenseCoffee) playerPurse - numberOfCoffees * 100 else playerPurse
-//      println("Your change: " + playerPurse + " cents")
+      val currentPlayerPurse = if(dispenseCoffee) playerPurse - numberOfCoffees * 100 else playerPurse
+      playerPurse = currentPlayerPurse
       if(dispenseCoffee) println("Coffee dispensed: " + numberOfCoffees) else println("No coffee for you")
       if(dispenseCoffee){
-
-        val changeReceived : (Option[Change], Option[Change], Option[Change]) = retrieveChange(playerPurse)
+        val changeReceived : (Option[Change], Option[Change], Option[Change]) = retrieveChange(currentPlayerPurse)
         println("You get " + changeReceived._1.getOrElse("No") + " quarters")
         println("You get " + changeReceived._2.getOrElse("No") + " dimes")
         println("You get " + changeReceived._3.getOrElse("No") + " nickels")
       }
-      println("Machine money: " + vendingMachinePurse)
-      println("Credit : " + playerPurse)
-      val coffeeDispense : Seq[Coffee] = Seq.fill(numberOfCoffees)(Coffee())
-      println("Dispensed Coffees : " + coffeeDispense.size + " \n" + coffeeDispense)
-//      println(fullCoins)
+      println("Machine Credit : " + vendingMachinePurse)
+      println("Player Credit : " + currentPlayerPurse)
+      println("Coins in Machine : " + fullCoins)
     }
   }
-
+  //User may or may not get change
   def retrieveChange(amount : Int) : (Option[Change], Option[Change], Option[Change]) = {
-    println(amount)
     var amountOwed : Int = amount
-
 
     //Call by name
     def quartersOwed : Int = amountOwed / 25
-
     def dimeOwed : Int = amountOwed / 10
     def nickelOwed : Int = amountOwed / 5
 
@@ -128,12 +122,14 @@ object VendingMachine extends Model[Coin]{
 
     if(quartersOwed > 0){
       if(hasQuarter){
+        //I have some quarters
         if(quarters.size < quartersOwed){
           val quarterReturn = Seq.fill(quarters.size)(Quarter())
           quarters.clear()
           quarterChangeOption = Some(Change(quarterReturn))
           amountOwed -= quarters.size * 25
         }
+          //I have all the quarters needed
         else {
           quarters.remove(0, quartersOwed )
           quarterChangeOption = Some(Change(Seq.fill(quartersOwed)(Quarter())))
@@ -141,7 +137,6 @@ object VendingMachine extends Model[Coin]{
         }
       }
     }
-
 
     if(dimeOwed > 0){
       if(hasDime){
@@ -164,12 +159,12 @@ object VendingMachine extends Model[Coin]{
 
     if(nickelOwed > 0) {
       if (hasNickel) {
+        //I have some quarters
         if (nickels.size < nickelOwed) {
           val nickelReturn = Seq.fill(nickels.size)(Nickel())
           nickels.clear()
           nickelChangeOption = Some(Change(nickelReturn))
           amountOwed -= nickels.size * 5
-
         }
         //I have all the quarters needed
         else {
@@ -188,9 +183,6 @@ object VendingMachine extends Model[Coin]{
    */
 }
 object VendingMachineTest extends App {
-  VendingMachine.stateTransition(Quarter(), Quarter())
-  VendingMachine.stateTransition(Quarter(), Quarter(), Quarter(), Quarter())
-//  VendingMachine.stateTransition(Quarter(), Quarter(), Quarter(), Nickel(), Nickel(), Quarter())
-//  VendingMachine.stateTransition(Nickel(), Dime(), Dime(), Quarter(), Nickel(), Quarter())
-
+  VendingMachine.stateTransition(Quarter(), Quarter(), Quarter(), Quarter(),Nickel())
+  VendingMachine.stateTransition()
 }

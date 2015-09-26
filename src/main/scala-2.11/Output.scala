@@ -1,4 +1,5 @@
 /**
  *
  */
-abstract class Output
+abstract class Output{
+}

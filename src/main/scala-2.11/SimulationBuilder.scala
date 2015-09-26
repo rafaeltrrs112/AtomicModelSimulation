@@ -1,4 +1,4 @@
 /**
  */
-class SimulationBuilder {
+object SimulationBuilder{
 }
