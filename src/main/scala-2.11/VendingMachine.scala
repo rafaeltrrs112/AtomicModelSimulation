@@ -195,7 +195,7 @@ class VendingMachine extends Model{
         }
       }
     }
-    oweMoney = (amountOwed > 0)
+    oweMoney = amountOwed > 0
     (quarterChangeOption, dimeChangeOption, nickelChangeOption)
   }
 }
