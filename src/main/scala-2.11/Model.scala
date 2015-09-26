@@ -1,7 +1,11 @@
 /**
  * Model trait for the framework
  */
-trait Model[A] {
+trait Model {
+
+  var _currentOutput : Option[Seq[Output]]
+
+  var _currentState : scala.collection.mutable.Map[String, String]
   /**
    *
    * @param input
@@ -12,12 +16,4 @@ trait Model[A] {
    *
    */
   def stateTransition(input : Seq[SimulationToken])
-
-  /**
-   *
-   * @return
-   *        Pair containing the output if any, and a state that will
-   *        always exits.
-   */
-  def outputAndView : (Option[Output])
 }

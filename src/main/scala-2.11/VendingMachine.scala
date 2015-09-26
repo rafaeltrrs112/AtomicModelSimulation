@@ -1,15 +1,25 @@
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
-/**
+/*
  * System Simulation Assignment 1
  * Vending Machine
  * */
-class VendingMachine extends Model[Coin]{
+class VendingMachine extends Model{
   var cancel = Cancel(false)
 
-  def fullCoins : ArrayBuffer[Coin] = quarters ++ nickels ++ dimes
-  def vendingMachinePurse : Int = fullCoins.foldLeft(0)(_ + _.value)
+  override var _currentState: mutable.Map[String, String] = scala.collection.mutable.Map[String,String]()
+  def currentState = _currentState
+  override var _currentOutput : Option[Seq[Output]] = None
+  def currentOutput = _currentOutput
+
+
+  var currentInput = Seq[SimulationToken]()
+
+  var playerChange = Seq[Change]()
+  
+  def vendingMachineCoins : ArrayBuffer[Coin] = quarters ++ nickels ++ dimes
+  def vendingMachinePurse : Int = vendingMachineCoins.foldLeft(0)(_ + _.value)
 
   var playerPurse : Int = 0
   val coins = mutable.Map[String, ArrayBuffer[Coin]]()
@@ -18,17 +28,17 @@ class VendingMachine extends Model[Coin]{
   def nickels = coins(Coin.Nickel)
   def dimes = coins(Coin.Dime)
 
-  //Initial currency value
-  coins += ("Nickel" -> ArrayBuffer[Coin](Nickel()))
-  coins += ("Dime" -> ArrayBuffer[Coin](Dime()))
-  coins += ("Quarter" -> ArrayBuffer[Coin](Quarter()))
+  coins += ("Nickel" -> ArrayBuffer[Coin]())
+  coins += ("Dime" -> ArrayBuffer[Coin]())
+  coins += ("Quarter" -> ArrayBuffer[Coin]())
+
+  var oweMoney : Boolean = false
 
   //Emptiness check methods
   def hasQuarter = coins(Coin.Quarter).nonEmpty
   def hasNickel = coins(Coin.Nickel).nonEmpty
   def hasDime = coins(Coin.Dime).nonEmpty
-  /**
-   *
+  /*
    * @param input
    * Takes in input and update internal state independent
    * variables. Calls transitionState() after input processing
@@ -36,7 +46,19 @@ class VendingMachine extends Model[Coin]{
    * state.
    */
   override def stateTransition(input: Seq[SimulationToken]){
-    println(vendingMachinePurse)
+    updatePurses(input)
+    _currentState =
+        mutable.Map[String,String]("Credit" -> playerPurse.toString,
+        "Money in machine" -> vendingMachinePurse.toString,
+        "Cancel" -> cancel.toString,
+        "CurrentOutput" -> _currentOutput.toString,
+        "Error" -> (if(oweMoney) "Cannot output change, enter more coins or please\n"+
+      "call Sim Soda Company at 1-800-123-4567" else "None"))
+    _currentOutput = None
+    processInput(input)
+  }
+
+  def updatePurses(input : Seq[SimulationToken]): Unit ={
     input.foreach {
       case coin : Coin => {
         coin match {
@@ -58,22 +80,17 @@ class VendingMachine extends Model[Coin]{
         cancel = c
       }
     }
-    println(vendingMachinePurse)
-    println("Nickels " + nickels.size + " * 5 = " + nickels.size * 5)
-    println("Dimes " + dimes.size + " * 10 = " + dimes.size * 10)
-    println("Quarters " + quarters.size + " * 25 = " + quarters.size * 25)
-    processInput(input)
   }
 
-  /**
-   *
-   * @return
-   * Pair containing the output if any, and a state that will
-   * always exits.
-   */
-  //Output contains : MachinePurse, MachineCoins, PlayerMoney, Option[Seq[Coffee()]]
-  override def outputAndView : Option[Output] = {
-    null
+  override def toString : String = {
+    _currentState.foldLeft("")(_ + "\n" + _.toString())
+  }
+
+  def updateOutput(n : Int) : Unit = {
+    _currentOutput = if (n > 0) Some(Seq.fill(n)(Coffee())) else None
+  }
+  def updateOutput(coins : Seq[Coin]) : Unit = {
+    _currentOutput = if (coins.nonEmpty) Some(coins) else None
   }
   /**
    * State transition functions alters the state member of the
@@ -83,28 +100,33 @@ class VendingMachine extends Model[Coin]{
    * Input into the model.
    */
   def processInput(input: Seq[SimulationToken]): Unit = {
-    println(playerPurse + " cents entered")
-    var nextState = {
-      val numberOfCoffees : Int = playerPurse / 100
-      val dispenseCoffee : Boolean = playerPurse >= 100
-      val currentPlayerPurse = if(!cancel.value && dispenseCoffee) playerPurse - numberOfCoffees * 100 else playerPurse
-      playerPurse = currentPlayerPurse
-      if(!cancel.value && dispenseCoffee) {
-        println("Coffee dispensed: " + numberOfCoffees)
-      }
-      else if(cancel.value){
-        val changeReceived = cancelEntered()
-        playerPurse = 0
-        println("You get " + changeReceived._1.getOrElse("No") + " quarters")
-        println("You get " + changeReceived._2.getOrElse("No") + " dimes")
-        println("You get " + changeReceived._3.getOrElse("No") + " nickels")
-      }
+    val numberOfCoffees : Int = playerPurse / 100
+    updateOutput(numberOfCoffees)
+    val dispenseCoffee : Boolean = playerPurse >= 100
+    val currentPlayerPurse = if(!cancel.value && dispenseCoffee) playerPurse - numberOfCoffees * 100 else playerPurse
+    playerPurse = currentPlayerPurse
+    if(!cancel.value && dispenseCoffee) {
+      updateOutput(numberOfCoffees)
     }
+    else if(cancel.value){
+      val changeReceived = cancelEntered()
+//      changeReceived.flatMap(_.change)
+      val testType = changeReceived.flatMap(_.change)
+      if(!(testType.foldLeft(0)(_ + _.value) == playerPurse)){
+      }
+      playerPurse = 0
+      updateOutput(changeReceived.flatMap(_.change))
+      changeReceived.foreach(_currentOutput ++ _.change)
+    }
+    cancel = Cancel(false)
   }
 
-  def cancelEntered(): (Option[Change], Option[Change], Option[Change])  = {
-    retrieveChange(playerPurse)
+  def cancelEntered(): Seq[Change]  = {
+    val getChange = retrieveChange(playerPurse)
+    val test : List[Change] = List(getChange._1, getChange._2, getChange._3).flatten
+    test.toSeq
   }
+
 
   //User may or may not get change
   def retrieveChange(amount : Int) : (Option[Change], Option[Change], Option[Change]) = {
@@ -173,18 +195,15 @@ class VendingMachine extends Model[Coin]{
         }
       }
     }
+    oweMoney = (amountOwed > 0)
     (quarterChangeOption, dimeChangeOption, nickelChangeOption)
   }
-
-  /**
-   * Some list of stateTransition functions that can be
-   * retrieved from below.
-   */
 }
 object VendingMachineTest extends App {
-  val inputStream : ArrayBuffer[ArrayBuffer[SimulationToken]] = ArrayBuffer(ArrayBuffer[SimulationToken](Quarter(), Quarter(), Quarter(), Cancel(false), Quarter(), Quarter(), Quarter(), Nickel()))
+  val inputStream : ArrayBuffer[ArrayBuffer[SimulationToken]] = ArrayBuffer(
+    ArrayBuffer[SimulationToken](Quarter(), Quarter(), Quarter(), Cancel(false), Dime(), Dime(), Dime()),
+    ArrayBuffer[SimulationToken](Cancel(true)), ArrayBuffer[SimulationToken](Cancel(false)))
+//    ArrayBuffer[SimulationToken](Nickel())
   val simulation = new Simulation(new VendingMachine(), inputStream)
   simulation.runSimulation()
-//  VendingMachine.stateTransition(ArrayBuffer[SimulationToken](Quarter(), Quarter(), Quarter(), Nickel()))
-//  VendingMachine.stateTransition()
 }
