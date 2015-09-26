@@ -1,6 +1,6 @@
 /**
- * Created by rtorres12 on 9/25/15.
+ *
  */
-class Simulation {
-
+class Simulation(model : Model[Coin], inputs : Seq[Seq[SimulationToken]]) {
+  def runSimulation() : Unit = inputs.foreach(model.stateTransition)
 }

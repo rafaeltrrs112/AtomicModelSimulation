@@ -2,8 +2,6 @@
  * Model trait for the framework
  */
 trait Model[A] {
-  //Create a getter for the state
-  var _currentState : State[A]
   /**
    *
    * @param input
@@ -13,7 +11,7 @@ trait Model[A] {
    *             state.
    *
    */
-  def stateTransition(input : SimulationToken*)
+  def stateTransition(input : Seq[SimulationToken])
 
   /**
    *
@@ -21,5 +19,5 @@ trait Model[A] {
    *        Pair containing the output if any, and a state that will
    *        always exits.
    */
-  def outputAndView : (Option[Output] , State[A])
+  def outputAndView : (Option[Output])
 }
