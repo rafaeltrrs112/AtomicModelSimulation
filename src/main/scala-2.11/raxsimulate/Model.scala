@@ -1,4 +1,4 @@
-package VendingMachine
+package raxsimulate
 
 /**
  * Model trait for the framework

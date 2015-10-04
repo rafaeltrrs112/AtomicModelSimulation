@@ -1,4 +1,6 @@
-package VendingMachine
+package vendingmachine
+
+import raxsimulate.{Model, Token}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer

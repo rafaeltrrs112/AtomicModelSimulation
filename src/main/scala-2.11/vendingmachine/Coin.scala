@@ -1,7 +1,9 @@
-package VendingMachine
+package vendingmachine
+
+import raxsimulate.Output
 
 /**
- * Created by rtorres12 on 10/4/15.
+ * Helper object for the Coin class
  */
 object Coin {
   val Nickel = "Nickel"

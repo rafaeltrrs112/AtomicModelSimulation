@@ -1,4 +1,4 @@
-package VendingMachine
+package vendingmachine
 
 /**
  * Dime : ten cents

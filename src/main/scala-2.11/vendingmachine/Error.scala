@@ -1,7 +1,9 @@
-package VendingMachine
+package vendingmachine
+
+import raxsimulate.Output
 
 /**
- * Created by rtorres12 on 10/4/15.
+ * Error output
  */
 case class Error() extends Output[String] {
 

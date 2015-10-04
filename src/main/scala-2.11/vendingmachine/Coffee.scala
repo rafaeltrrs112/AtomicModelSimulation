@@ -1,7 +1,9 @@
-package VendingMachine
+package vendingmachine
+
+import raxsimulate.Output
 
 /**
- * Created by rtorres12 on 10/4/15.
+ * Coffee output
  */
 case class Coffee() extends Output[String] {
   override val value = "Starbucks (C)"

@@ -1,4 +1,4 @@
-package VendingMachine
+package raxsimulate
 
 /**
  * All inputs are entered into a system for a reason. Therefore all inputs

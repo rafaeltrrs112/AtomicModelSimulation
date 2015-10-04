@@ -1,4 +1,4 @@
-package VendingMachine
+package vendingmachine
 
 /**
  * Quarter : twenty five cents

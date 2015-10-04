@@ -1,4 +1,6 @@
-package VendingMachine
+package vendingmachine
+
+import raxsimulate.Input
 
 /**
  *

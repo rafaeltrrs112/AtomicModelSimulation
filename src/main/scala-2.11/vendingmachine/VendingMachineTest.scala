@@ -1,9 +1,11 @@
-package VendingMachine
+package vendingmachine
+
+import raxsimulate.{Simulation, Token}
 
 import scala.collection.mutable.ArrayBuffer
 
 /**
- * Created by rtorres12 on 10/4/15.
+ * Demo shown to Professor Pantaleev in class. Worked smoothly.
  */
 object VendingMachineTest extends App {
 

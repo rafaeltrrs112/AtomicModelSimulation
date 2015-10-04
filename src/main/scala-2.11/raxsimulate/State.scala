@@ -1,6 +1,4 @@
-package VendingMachine
-
-
+package raxsimulate
 
 /**
  *
