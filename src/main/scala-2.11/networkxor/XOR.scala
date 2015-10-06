@@ -5,14 +5,14 @@ import raxsimulate.{Simulation, Model, Token}
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
-case class XorToken(value : Boolean) extends Token
+case class XORToken(value : Boolean) extends Token
 /**
  * Assignment 3 network xor.XOR model.
  */
 class XORModel extends Model {
 
-  override var _currentOutput: Option[Seq[Token]] =
-    Some(ArrayBuffer[XorToken](XorToken(true)))
+  var _currentOutput: Option[Seq[Token]] =
+    Some(ArrayBuffer[XORToken](XORToken(true)))
 
   /**
    *
@@ -21,23 +21,31 @@ class XORModel extends Model {
    *
    */
   override def stateTransition(input: Seq[Token]): Unit = {
-    val result : Seq[XorToken] = {
-      input.map(_.asInstanceOf[XorToken])
+    val result : Seq[XORToken] = {
+      input.map(_.asInstanceOf[XORToken])
     }
-    _currentOutput = Some(Seq[XorToken](result.foldLeft(XorToken(false))(XOR)))
+    _currentOutput = Some(Seq[XORToken](result.foldLeft(XORToken(false))(XOR)))
     _currentState("Output: ") = _currentOutput.toString
   }
 
-  private def XOR(xOne : XorToken, xTwo : XorToken): XorToken ={
-    if ( (!xOne.value && xTwo.value) || (xOne.value && !xTwo.value) ) XorToken(true) else XorToken(false)
+  private def XOR(xOne : XORToken, xTwo : XORToken): XORToken ={
+    if ( (!xOne.value && xTwo.value) || (xOne.value && !xTwo.value) ) XORToken(true) else XORToken(false)
   }
 
-  override var _currentState: mutable.Map[String, String] = mutable.Map[String,String]()
+  var _currentState: mutable.Map[String, String] = mutable.Map[String,String]()
 
   override def toString = "XOR\n" +
                           "CurrentState: " + _currentState
+
+  override def currentOutput: Option[Seq[Token]] = _currentOutput
+
+  override def currentState: mutable.Map[String, String] = _currentState
 }
+
+/**
+ * Test run of XOR atomic model.
+ */
 object XORSimulationTest extends App {
-  val sim = new Simulation(new XORModel, mutable.Seq[Seq[Token]](Seq[Token](XorToken(false), XorToken(true)), Seq[Token]()))
+  val sim = new Simulation(new XORModel, mutable.Seq[Seq[Token]](Seq[Token](XORToken(false), XORToken(true)), Seq[Token]()))
   sim.runSimulation()
 }

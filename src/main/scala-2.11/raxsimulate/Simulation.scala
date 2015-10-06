@@ -8,7 +8,7 @@ class Simulation(model: Model, inputs: Seq[Seq[Token]]) {
 
   def runSimulation(): Unit = inputs.foreach((v) => {
     println("Tick [" + tickNumber + "]")
-    println(model.currentOutput)
+    println("Model Output: " + model.currentOutput)
     model.stateTransition(v)
     tickNumber += 1
     println(model) // prints out the state of the model

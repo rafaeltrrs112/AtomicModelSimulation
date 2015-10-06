@@ -15,11 +15,11 @@ import scala.collection.mutable.ArrayBuffer
 class VendingMachine extends Model {
   var cancel = Cancel(false)
 
-  override var _currentState: mutable.Map[String, String] = scala.collection.mutable.Map[String, String]()
+  var _currentState: mutable.Map[String, String] = scala.collection.mutable.Map[String, String]()
 
   def currentState = _currentState
 
-  override var _currentOutput: Option[Seq[Token]] = None
+  var _currentOutput: Option[Seq[Token]] = None
 
   override def currentOutput = _currentOutput
 

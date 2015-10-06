@@ -5,11 +5,9 @@ package raxsimulate
  */
 trait Model {
 
-  var _currentOutput: Option[Seq[Token]]
+  def currentOutput : Option[Seq[Token]]
 
-  def currentOutput = _currentOutput
-
-  var _currentState: scala.collection.mutable.Map[String, String]
+  def currentState: scala.collection.mutable.Map[String, String]
 
   /**
    *

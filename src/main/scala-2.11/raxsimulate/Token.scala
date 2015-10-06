@@ -6,3 +6,4 @@ package raxsimulate
  * checking whether pattern matching is exhaustive.
  */
 trait Token
+case class EmptyToken() extends Token

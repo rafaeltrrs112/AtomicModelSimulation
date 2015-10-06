@@ -9,7 +9,6 @@ import scala.collection.mutable.ArrayBuffer
  */
 object VendingMachineTest extends App {
 
-
   val inputStream: ArrayBuffer[ArrayBuffer[Token]] = ArrayBuffer(
     ArrayBuffer[Token](Quarter(), Quarter(), Quarter(), Cancel(false), Dime(), Dime(), Dime()),
     ArrayBuffer[Token](Cancel(true)), ArrayBuffer[Token](Cancel(false)))
