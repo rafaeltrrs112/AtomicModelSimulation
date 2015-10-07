@@ -5,6 +5,9 @@ import raxsimulate.io.{EmptyToken, Token}
 import scala.collection.mutable
 
 /**
+ * Single input buffer.
+ * TODO Make the buffer count variable.
+ * Use a buffer with predefined bounds maybe...
  */
 class InputBuffer(modelName : String, initialOutput : Token) extends Model {
   override def name: String = modelName
