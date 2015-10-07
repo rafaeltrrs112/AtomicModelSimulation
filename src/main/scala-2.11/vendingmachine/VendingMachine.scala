@@ -1,18 +1,19 @@
 package vendingmachine
 
-import raxsimulate.{Model, Token}
+import raxsimulate.io.Token
+import raxsimulate.model.Model
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 /**
- * Created by rtorres12 on 10/4/15.
  */
 /*
  * System Simulation Assignment 1
  * Vending Machine
  * */
-class VendingMachine extends Model {
+class VendingMachine(modelName : String) extends Model {
+  override def name: String = modelName
   var cancel = Cancel(false)
 
   var _currentState: mutable.Map[String, String] = scala.collection.mutable.Map[String, String]()
@@ -217,4 +218,5 @@ class VendingMachine extends Model {
     oweMoney = amountOwed > 0
     (quarterChangeOption, dimeChangeOption, nickelChangeOption)
   }
+
 }

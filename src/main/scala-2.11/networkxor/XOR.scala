@@ -1,6 +1,8 @@
 package networkxor
 
-import raxsimulate.{Simulation, Model, Token}
+import raxsimulate.io.Token
+import raxsimulate.model.Model
+import raxsimulate.Simulation
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -9,7 +11,8 @@ case class XORToken(value : Boolean) extends Token
 /**
  * Assignment 3 network xor.XOR model.
  */
-class XORModel extends Model {
+class XORModel(modelName : String) extends Model() {
+  override val name = modelName
 
   var _currentOutput: Option[Seq[Token]] =
     Some(ArrayBuffer[XORToken](XORToken(true)))
@@ -46,6 +49,6 @@ class XORModel extends Model {
  * Test run of XOR atomic model.
  */
 object XORSimulationTest extends App {
-  val sim = new Simulation(new XORModel, mutable.Seq[Seq[Token]](Seq[Token](XORToken(false), XORToken(true)), Seq[Token]()))
+  val sim = new Simulation(new XORModel("O1"), mutable.Seq[Seq[Token]](Seq[Token](XORToken(false), XORToken(true)), Seq[Token]()))
   sim.runSimulation()
 }

@@ -1,4 +1,4 @@
-package raxsimulate
+package raxsimulate.io
 
 /**
  * All inputs are entered into a system for a reason. Therefore all inputs

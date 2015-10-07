@@ -1,9 +1,13 @@
-package raxsimulate
+package raxsimulate.model
+
+import raxsimulate.io.Token
 
 /**
  * Model trait for the framework
  */
 trait Model {
+
+  def name : String
 
   def currentOutput : Option[Seq[Token]]
 

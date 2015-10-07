@@ -1,14 +1,17 @@
 package networkxor
 
-import raxsimulate.{EmptyToken, Simulation, Token, Model}
+import raxsimulate.io.{EmptyToken, Token}
+import raxsimulate.model.Model
+import raxsimulate.Simulation
 
 import scala.collection.mutable
 
 /**
  * Memory model for use in Homework 3 assignment.
  */
-class Memory extends Model {
-
+class XorMemory(modelName : String) extends Model {
+  override def name: String = modelName
+  
   var inMemory : (Option[XORToken], Option[XORToken]) = (Some(XORToken(true)), Some(XORToken(false)))
   var currentTop : Option[XORToken] = Some(XORToken(false))
 
@@ -70,8 +73,8 @@ object XorList {
   }
 
 }
-object MemoryTest extends App{
-  val mem = new Memory
+object XorMemoryTest extends App{
+  val mem = new XorMemory
   val simulation = new Simulation(mem, XorList(true, false, true, true, false, false, true, true))
   simulation.runSimulation()
 }

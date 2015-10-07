@@ -1,6 +1,7 @@
 package vendingmachine
 
-import raxsimulate.{Simulation, Token}
+import raxsimulate.Simulation
+import raxsimulate.io.Token
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -19,10 +20,10 @@ object VendingMachineTest extends App {
     ArrayBuffer[Token](Cancel(true)), ArrayBuffer[Token](Cancel(false)))
 
   println("***Run Two***")
-  val simulation = new Simulation(new VendingMachine(), inputStream)
+  val simulation = new Simulation(new VendingMachine("Starbucks Machine"), inputStream)
   simulation.runSimulation()
 
   println("***Run Two***")
-  val simulationTwo = new Simulation(new VendingMachine(), inputStreamTwo)
+  val simulationTwo = new Simulation(new VendingMachine("Starbucks Machine"), inputStreamTwo)
   simulationTwo.runSimulation()
 }
