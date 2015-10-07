@@ -26,7 +26,9 @@ class NetworkModel(modelName : String, cluster: RoutedCluster) extends Model{
    */
   private def transitionCluster() : Unit = {
     for((model, linkedModels) <- cluster.clusterRoute){
-      linkedModels.foreach(_.stateTransition(model.currentOutput.getOrElse(EmptyToken.EmptyTokenSeq)))
+      linkedModels.foreach{
+        _.stateTransition(model.currentOutput.getOrElse(EmptyToken.emptyTokenSeq))
+      }
     }
   }
 
@@ -88,11 +90,3 @@ case class ConfigMap(configuration : Map[String, Seq[String]])
  *                   are stored in the integer collection value associated with the model key.
  */
 case class RoutedCluster(alphaRoute : mutable.Map[Model, Seq[Int]], clusterRoute : Map[Model, Iterable[Model]])
-
-
-/*
- * IDK
- */
-class Router{
-
-}

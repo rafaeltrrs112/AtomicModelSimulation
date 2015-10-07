@@ -3,6 +3,8 @@ package raxsimulate.io
 /**
  *
  */
-trait Output[String] extends Token {
-  val value: String
+trait Output[T] extends Token {
+  val value: T
 }
+//Used by routers to order their outputs.
+case class WrappedToken(value : Seq[Token]) extends Output[Seq[Token]]
