@@ -1,6 +1,6 @@
-package vendingmachine
+package a2
 
-import raxsimulate.Output
+import raxsimulate.io.Output
 
 /**
  * Error output

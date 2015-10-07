@@ -1,4 +1,4 @@
-package vendingmachine
+package a2
 
 /**
  * Quarter : twenty five cents

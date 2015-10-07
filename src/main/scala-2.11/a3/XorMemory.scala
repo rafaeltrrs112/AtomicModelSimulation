@@ -1,4 +1,4 @@
-package networkxor
+package a3
 
 import raxsimulate.io.{EmptyToken, Token}
 import raxsimulate.model.Model
@@ -8,7 +8,9 @@ import scala.collection.mutable
 
 /**
  * Memory model for use in Homework 3 assignment.
+ *
  */
+//TODO Have this model now extends the memory model class
 class XorMemory(modelName : String) extends Model {
   override def name: String = modelName
   
@@ -31,7 +33,7 @@ class XorMemory(modelName : String) extends Model {
     inMemory = (inMemory _2, Some(xORToken))
   }
 
-  def emptyPushMemUp = {
+  def emptyPushMemUp() = {
     //Push top in memory up
     currentTop = inMemory._1
     //Push 2nd in memory up and place new input into the back of the memory
@@ -47,7 +49,7 @@ class XorMemory(modelName : String) extends Model {
    */
   override def stateTransition(input: Seq[Token]): Unit = {
     input.foreach{
-      case e : EmptyToken => emptyPushMemUp
+      case e : EmptyToken => emptyPushMemUp()
       case x : XORToken => pushMemUp(x)
     }
   }
@@ -74,7 +76,7 @@ object XorList {
 
 }
 object XorMemoryTest extends App{
-  val mem = new XorMemory
+  val mem = new XorMemory("XorModel")
   val simulation = new Simulation(mem, XorList(true, false, true, true, false, false, true, true))
   simulation.runSimulation()
 }

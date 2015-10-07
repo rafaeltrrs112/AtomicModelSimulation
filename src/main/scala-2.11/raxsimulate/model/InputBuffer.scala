@@ -1,7 +1,6 @@
-package raxsimulate
+package raxsimulate.model
 
 import raxsimulate.io.{EmptyToken, Token}
-import raxsimulate.model.Model
 
 import scala.collection.mutable
 

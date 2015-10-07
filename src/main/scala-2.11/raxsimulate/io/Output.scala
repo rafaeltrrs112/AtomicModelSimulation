@@ -1,6 +1,4 @@
-package raxsimulate
-
-import raxsimulate.io.Token
+package raxsimulate.io
 
 /**
  *

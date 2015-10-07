@@ -1,7 +1,7 @@
 package raxsimulate.builders
 
-import networkxor.RoutedCluster
 import raxsimulate.model.Model
+import raxsimulate.network.{ConfigMap, RoutedCluster}
 
 import scala.collection.immutable.Map
 import scala.collection.mutable
@@ -16,7 +16,7 @@ class ClusterBuilder(inputRange : Int){
   private val betaModels : mutable.Map[String, Model] = mutable.Map[String, Model]()
 
   //Alpha models receive the inputs from the networks source inputs
-  private val alphaModels : mutable.Map[Model, Set[Int]] = mutable.Map[Model, Set[Int]]()
+  private val alphaModels : mutable.Map[Model, Seq[Int]] = mutable.Map[Model, Seq[Int]]()
 
   private def modelsJoined : mutable.Map[String, Model] = {
     val alphaModelsMap = for(pair <- alphaModels) yield (pair._1.name, pair._1)
@@ -27,11 +27,12 @@ class ClusterBuilder(inputRange : Int){
 
   def addModel(model : Map[String, Model]) = betaModels ++= model
 
-  def addAlpha(model : Model, inputIDs : Set[Int]) = alphaModels += ((model, inputIDs))
+  def addAlpha(model : Model, inputIDs : Seq[Int]) = alphaModels += ((model, inputIDs))
 
   private def bindRoutes(configMap : ConfigMap) = {
+
     val config = configMap.configuration
-    var routedModelMap = mutable.Map[Model, Set[Model]]()
+    var routedModelMap = mutable.Map[Model, Seq[Model]]()
 
     val allModels = modelsJoined
 

@@ -1,4 +1,4 @@
-package vendingmachine
+package a2
 
 import raxsimulate.Simulation
 import raxsimulate.io.Token

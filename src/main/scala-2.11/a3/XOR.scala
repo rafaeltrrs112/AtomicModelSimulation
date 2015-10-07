@@ -1,4 +1,4 @@
-package networkxor
+package a3
 
 import raxsimulate.io.Token
 import raxsimulate.model.Model

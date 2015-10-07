@@ -1,4 +1,4 @@
-package vendingmachine
+package a2
 
 /**
  * Nickel : five cents
