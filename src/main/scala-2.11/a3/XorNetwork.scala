@@ -3,7 +3,7 @@ package a3
 import raxsimulate.Simulation
 import raxsimulate.builders.ClusterBuilder
 import raxsimulate.io.ModelRouteConfig
-import raxsimulate.model.{InputBuffer, Model, Router}
+import raxsimulate.model.{InputBuffer, Router}
 import raxsimulate.network.ConfigMap
 
 import scala.collection.immutable.Map
@@ -18,6 +18,7 @@ object XorNetwork extends App {
   //used for recursion
   val O1inner = new XORModel("O1_Raw")
   val O2 = new XORModel("O2")
+
   val memoryModel = new InputBuffer("M1", XORToken(false), XORToken(false))
 
   //The router to encapsulate 01's input and on of the incoming
@@ -29,18 +30,33 @@ object XorNetwork extends App {
   val routeConfig = ModelRouteConfig(O1inner, IndexedSeq(0, 1))
   xorOneRouted.addRoutedModel(routeConfig)
 
-  val xorCluster = new ClusterBuilder(2, O2)
-  
+  //A cluster is a precursor to a network model.
+  //A cluster of bounded models exists within every network
+  //The cluster builder requires in it's constructor the
+  //outputting model.
+  val xorCluster = new ClusterBuilder(O2)
+
+  //An alpha model takes in input from the outside only
+  //The XOR Router takes in all the inputs and returns two.
+  //The two outputs at every state are passed to 02
   xorCluster.addAlpha(xorOneRouted, IndexedSeq(0, 1, 2))
+  //Beta models take in input from other models
   xorCluster.addModel(O2)
+
+  //A config map consists of the model outputting
+  //with a value of strings containing the names of all the models who
+  //will be receiving the output from the key model.
   val xorBindings = ConfigMap(Map(("01_Routed", IndexedSeq("O2"))))
-  
+
+  //The inner networks cluster is now complete. A network can now be built
+  //out of that cluster assuming all inputs are handed to alphas or routed through
+  //and some model is bound to the output wire.
   val N2 = xorCluster.generateNetwork("N2", xorBindings).getOrElse(
-    throw new UnsupportedOperationException("Cannot generate model")
+    throw new RuntimeException("Cannot generate model")
   )
 
-  //Now do the same...except this time the
-
+  //We can now create a simple application specific model for
+  //this homework network.
   val N1 = new RecursiveNetwork("N1", N2, memoryModel)
   val simulator = new Simulation(
     N1,

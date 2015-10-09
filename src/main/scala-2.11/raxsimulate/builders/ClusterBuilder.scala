@@ -10,10 +10,8 @@ import scala.collection.mutable.ArrayBuffer
 
 /**
  * A linker class for use within the network model implementation.
- * @param inputRange
- *                  The maximum amount of inputs
  */
-class ClusterBuilder(inputRange : Int, outPuttingModel : Model){
+class ClusterBuilder(outPuttingModel : Model){
   //Beta models do not receive output from outside their network.
   private val betaModels : mutable.Map[String, Model] = mutable.Map[String, Model]()
 
@@ -33,10 +31,6 @@ class ClusterBuilder(inputRange : Int, outPuttingModel : Model){
 
 
   private def bindRoutes(configMap : ConfigMap) = {
-  println(configMap)
-    for((model, accepters) <- configMap.configuration){
-      println(model+"'s output goes to "+accepters)
-    }
     val config = configMap.configuration
 
     val allModels = modelsJoined
@@ -55,22 +49,6 @@ class ClusterBuilder(inputRange : Int, outPuttingModel : Model){
     val correctedCluster = for((model, boundedModels) <- routedCluster) yield {
       (model, boundedModels.filterNot((e) => e.name.equals(model.name) || alphaModels.forall((pair) => pair._1.name.equals(e.name))))
     }
-
-    correctedCluster.foreach{
-      (pair) => {
-        println("Corrected model " +  pair._1.name + " sending to")
-        pair._2.foreach((e) => println("\t\t\t" + e.name))
-      }
-    }
-  println(routedCluster.toMap.foreach{ (pair) => {
-    println("Model name **: " + pair._1.name)
-    pair._2.foreach{ (innerModel) => {
-      println("\t\t\t" + innerModel.name)
-    }
-
-    }
-  }
-  })
     correctedCluster.toMap
   }
 

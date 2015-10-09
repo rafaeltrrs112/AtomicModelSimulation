@@ -5,7 +5,6 @@ import scala.collection.mutable
 
 /**
  * Single input buffer.
- * TODO Make the buffer count variable.
  * Use a buffer with predefined bounds maybe...
  */
 class InputBuffer(modelName : String, nextOutput : Token, initialOutput : Token) extends Model {
@@ -15,7 +14,6 @@ class InputBuffer(modelName : String, nextOutput : Token, initialOutput : Token)
   //Check if uninitialized in state transition function.
   var inMemory : Option[Token] = Some(nextOutput)
 
-  //TODO Program crashes here because XORModel does not handle none output. Initialized the buffer properly!!...
   var _currentOutput : Option[Token] = Some(initialOutput)
 
   override def currentState  = mutable.Map[String, String](

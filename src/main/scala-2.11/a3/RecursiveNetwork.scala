@@ -42,8 +42,6 @@ class RecursiveNetwork(modelName : String, receiver : Model, memory : InputBuffe
    *
    */
   override def stateTransition(input: IndexedSeq[Token]): Unit = {
-    println(" Memory output " + memory.currentOutput)
-    println("Recursive network receiving " + input)
     receiver.stateTransition(
       IndexedSeq(input.head, input(1)) ++ memory.currentOutput.getOrElse(EmptyToken.emptyTokenIndexedSeq)
     )

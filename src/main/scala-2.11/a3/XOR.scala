@@ -28,7 +28,6 @@ class XORModel(modelName: String) extends Model() {
    *
    */
   override def stateTransition(input: IndexedSeq[Token]): Unit = {
-  println(name + " receiving " + input)
     var result: mutable.ArrayBuffer[XORToken] = mutable.ArrayBuffer[XORToken]()
 
     input.foreach { (token) => {

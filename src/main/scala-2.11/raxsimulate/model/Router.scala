@@ -36,7 +36,6 @@ class Router(modelName : String) extends Model{
     //Iterate through the routed model case class and collect the inputs for the
     //models according to the config.
     for((ModelRouteConfig(model, indices, _)) <- configRoutes){
-      println("Router has inputs" + input +" attempting to send to "+model.name)
       val currentInputs : IndexedSeq[Token] = for(ind <- indices) yield input(ind)
        model.stateTransition(currentInputs)
 

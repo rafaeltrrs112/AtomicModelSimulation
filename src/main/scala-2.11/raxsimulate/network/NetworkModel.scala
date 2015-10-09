@@ -23,13 +23,6 @@ class NetworkModel(modelName : String, cluster: RoutedCluster) extends Model {
    */
   private def transitionCluster() : Unit = {
     for((model, linkedModels) <- cluster.clusterRoute){
-      println("Cluster route for : " + model.name)
-      linkedModels.foreach{ (modelLink) => {
-        println("\t\t\t"+modelLink.name)
-      }
-      }
-    }
-    for((model, linkedModels) <- cluster.clusterRoute){
       linkedModels.foreach{ (modelLink) => {
         modelLink.stateTransition(model.currentOutput.getOrElse(EmptyToken.emptyTokenIndexedSeq))
       }
@@ -45,12 +38,6 @@ class NetworkModel(modelName : String, cluster: RoutedCluster) extends Model {
    *               A set of input tokens.
    */
   private def alphaConsume(inputs : IndexedSeq[Token]) : Unit = {
-    for((alpha, idSet) <- cluster.alphaRoute) {
-      println("Alpha route for " + alpha.name)
-      idSet.foreach{ (id) =>
-        println(id)
-      }
-    }
     for((alpha, idSet) <- cluster.alphaRoute) {
       val validInputs : IndexedSeq[Token] = for(i <- idSet) yield inputs(i)
       alpha.stateTransition(validInputs)
