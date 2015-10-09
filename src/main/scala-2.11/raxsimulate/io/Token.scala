@@ -8,5 +8,5 @@ package raxsimulate.io
 trait Token
 case class EmptyToken() extends Token
 object EmptyToken{
-  def emptyTokenSeq = Seq[Token](EmptyToken())
+  def emptyTokenIndexedSeq = IndexedSeq[Token](EmptyToken())
 }

@@ -8,26 +8,27 @@ import scala.collection.mutable
  * TODO Make the buffer count variable.
  * Use a buffer with predefined bounds maybe...
  */
-class InputBuffer(modelName : String, initialOutput : Token) extends Model {
+class InputBuffer(modelName : String, nextOutput : Token, initialOutput : Token) extends Model {
   override def name: String = modelName
 
-  var inMemory : Option[Token] = Some(initialOutput)
 
-  var _currentOutput : Option[Token] = None
+  //Check if uninitialized in state transition function.
+  var inMemory : Option[Token] = Some(nextOutput)
+
+  //TODO Program crashes here because XORModel does not handle none output. Initialized the buffer properly!!...
+  var _currentOutput : Option[Token] = Some(initialOutput)
 
   override def currentState  = mutable.Map[String, String](
     ("Next Output : ", currentOutput.toString),
     ("In memory:", inMemory.toString)
   )
 
-  override def currentOutput : Option[Seq[Token]] = 
-    if (_currentOutput.isDefined) Some(Seq(_currentOutput.get)) else None
+  override def currentOutput : Option[IndexedSeq[Token]] =
+    if (_currentOutput.isDefined) Some(IndexedSeq(_currentOutput.get)) else None
 
   def pushMemUp(token : Token): Unit = {
-
     _currentOutput = inMemory
     inMemory = Some(token)
-
   }
 
   def emptyPushMemUp() = {
@@ -43,7 +44,7 @@ class InputBuffer(modelName : String, initialOutput : Token) extends Model {
    *    A single XorToken input to be stored in memory.
    *
    */
-  override def stateTransition(input: Seq[Token]): Unit = {
+  override def stateTransition(input: IndexedSeq[Token]): Unit = {
     input.foreach{
       case e : EmptyToken => emptyPushMemUp()
       case x : Token => pushMemUp(x)

@@ -8,16 +8,13 @@ import raxsimulate.model.Model
 
 import scala.collection.immutable.Map
 import scala.collection.mutable
-/**
- * TODO Complete the implementation of the NetWorkModel class.
- */
-class NetworkModel(modelName : String, cluster: RoutedCluster) extends Model{
+class NetworkModel(modelName : String, cluster: RoutedCluster) extends Model {
 
   override def name: String = modelName
 
-  override def currentState: mutable.Map[String, String] = ???
+  override def currentState: mutable.Map[String, String] = mutable.Map(("Output: ", currentState.toString()))
 
-  override def currentOutput: Option[Seq[Token]] = ???
+  override def currentOutput: Option[IndexedSeq[Token]] = cluster.bottomModel.currentOutput
 
   /*
    * Non-external/intra cluster inputs are insert into all non alpha models.
@@ -26,8 +23,16 @@ class NetworkModel(modelName : String, cluster: RoutedCluster) extends Model{
    */
   private def transitionCluster() : Unit = {
     for((model, linkedModels) <- cluster.clusterRoute){
-      linkedModels.foreach{
-        _.stateTransition(model.currentOutput.getOrElse(EmptyToken.emptyTokenSeq))
+      println("Cluster route for : " + model.name)
+      linkedModels.foreach{ (modelLink) => {
+        println("\t\t\t"+modelLink.name)
+      }
+      }
+    }
+    for((model, linkedModels) <- cluster.clusterRoute){
+      linkedModels.foreach{ (modelLink) => {
+        modelLink.stateTransition(model.currentOutput.getOrElse(EmptyToken.emptyTokenIndexedSeq))
+      }
       }
     }
   }
@@ -39,11 +44,18 @@ class NetworkModel(modelName : String, cluster: RoutedCluster) extends Model{
    * @param inputs
    *               A set of input tokens.
    */
-  private def alphaConsume(inputs : Seq[Token]) : Unit = {
+  private def alphaConsume(inputs : IndexedSeq[Token]) : Unit = {
     for((alpha, idSet) <- cluster.alphaRoute) {
-      val validInputs : Seq[Token] = for(i <- idSet) yield inputs(i)
+      println("Alpha route for " + alpha.name)
+      idSet.foreach{ (id) =>
+        println(id)
+      }
+    }
+    for((alpha, idSet) <- cluster.alphaRoute) {
+      val validInputs : IndexedSeq[Token] = for(i <- idSet) yield inputs(i)
       alpha.stateTransition(validInputs)
     }
+    transitionCluster()
   }
 
   /**
@@ -55,29 +67,17 @@ class NetworkModel(modelName : String, cluster: RoutedCluster) extends Model{
    * state.
    *
    */
-  override def stateTransition(input: Seq[Token]): Unit = alphaConsume(input)
+  override def stateTransition(input: IndexedSeq[Token]): Unit = alphaConsume(input)
 }
-
-/**
- *
- */
-object NetWorkModel{
-
-}
-
-/**
- *
- */
-case class NetWorkConfig()
 
 /**
  * The configuration map contains the output to model configuration for the network model.
- * The key is the name of the model outputting some data. And the value is the sequence of the names
+ * The key is the name of the model outputting some data. And the value is the IndexedSequence of the names
  * of the models whose input is the output of the outputting model.
  * @param configuration
  *        Key is output model name. Value is the name of the models receive the input.
  */
-case class ConfigMap(configuration : Map[String, Seq[String]])
+case class ConfigMap(configuration : Map[String, IndexedSeq[String]])
 
 /**
  * Map with model values associated with an iterable containing all models receiving input from the
@@ -89,4 +89,4 @@ case class ConfigMap(configuration : Map[String, Seq[String]])
  *                   A fully configured route map with outputting models as keys and all models receiving their input
  *                   are stored in the integer collection value associated with the model key.
  */
-case class RoutedCluster(alphaRoute : mutable.Map[Model, Seq[Int]], clusterRoute : Map[Model, Iterable[Model]])
+case class RoutedCluster(alphaRoute : mutable.Map[Model, IndexedSeq[Int]], clusterRoute : Map[Model, Iterable[Model]], bottomModel : Model)

@@ -20,14 +20,14 @@ class VendingMachine(modelName : String) extends Model {
 
   def currentState = _currentState
 
-  var _currentOutput: Option[Seq[Token]] = None
+  var _currentOutput: Option[IndexedSeq[Token]] = None
 
   override def currentOutput = _currentOutput
 
 
-  var currentInput = Seq[Token]()
+  var currentInput = IndexedSeq[Token]()
 
-  var playerChange = Seq[Change]()
+  var playerChange = IndexedSeq[Change]()
 
   def vendingMachineCoins: ArrayBuffer[Coin] = quarters ++ nickels ++ dimes
 
@@ -62,7 +62,7 @@ class VendingMachine(modelName : String) extends Model {
    * to alter state dependent model properties and and transition
    * state.
    */
-  override def stateTransition(input: Seq[Token]) {
+  override def stateTransition(input: IndexedSeq[Token]) {
     updatePurses(input)
     _currentState =
       mutable.Map[String, String]("Credit" -> playerPurse.toString,
@@ -76,7 +76,7 @@ class VendingMachine(modelName : String) extends Model {
     processInput(input)
   }
 
-  def updatePurses(input: Seq[Token]): Unit = {
+  def updatePurses(input: IndexedSeq[Token]): Unit = {
     input.foreach {
       case coin: Coin => {
         coin match {
@@ -105,10 +105,10 @@ class VendingMachine(modelName : String) extends Model {
   }
 
   def updateOutput(n: Int): Unit = {
-    _currentOutput = if (n > 0) Some(Seq.fill(n)(Coffee())) else None
+    _currentOutput = if (n > 0) Some(IndexedSeq.fill(n)(Coffee())) else None
   }
 
-  def updateOutput(coins: Seq[Coin]): Unit = {
+  def updateOutput(coins: IndexedSeq[Coin]): Unit = {
     _currentOutput = if (coins.nonEmpty) Some(coins) else None
   }
 
@@ -119,7 +119,7 @@ class VendingMachine(modelName : String) extends Model {
    * @param input
    * Input into the model.
    */
-  def processInput(input: Seq[Token]): Unit = {
+  def processInput(input: IndexedSeq[Token]): Unit = {
     val numberOfCoffees: Int = playerPurse / 100
     updateOutput(numberOfCoffees)
     val dispenseCoffee: Boolean = playerPurse >= 100
@@ -141,10 +141,10 @@ class VendingMachine(modelName : String) extends Model {
     cancel = Cancel(false)
   }
 
-  def cancelEntered(): Seq[Change] = {
+  def cancelEntered(): IndexedSeq[Change] = {
     val getChange = retrieveChange(playerPurse)
     val test: List[Change] = List(getChange._1, getChange._2, getChange._3).flatten
-    test.toSeq
+    test.toIndexedSeq
   }
 
 
@@ -165,7 +165,7 @@ class VendingMachine(modelName : String) extends Model {
       if (hasQuarter) {
         //I have some quarters
         if (quarters.size < quartersOwed) {
-          val quarterReturn = Seq.fill(quarters.size)(Quarter())
+          val quarterReturn = IndexedSeq.fill(quarters.size)(Quarter())
           quarters.clear()
           quarterChangeOption = Some(Change(quarterReturn))
           amountOwed -= quarters.size * 25
@@ -173,7 +173,7 @@ class VendingMachine(modelName : String) extends Model {
         //I have all the quarters needed
         else {
           quarters.remove(0, quartersOwed)
-          quarterChangeOption = Some(Change(Seq.fill(quartersOwed)(Quarter())))
+          quarterChangeOption = Some(Change(IndexedSeq.fill(quartersOwed)(Quarter())))
           amountOwed -= quartersOwed * 25
         }
       }
@@ -183,7 +183,7 @@ class VendingMachine(modelName : String) extends Model {
       if (hasDime) {
         //I have some quarters
         if (dimes.size < dimeOwed) {
-          val dimeReturn = Seq.fill(dimes.size)(Dime())
+          val dimeReturn = IndexedSeq.fill(dimes.size)(Dime())
           dimes.clear()
           dimeChangeOption = Some(Change(dimeReturn))
           amountOwed -= dimes.size * 10
@@ -191,7 +191,7 @@ class VendingMachine(modelName : String) extends Model {
         //I have all the quarters needed
         else {
           dimes.remove(0, dimeOwed)
-          dimeChangeOption = Some(Change(Seq.fill(dimeOwed)(Dime())))
+          dimeChangeOption = Some(Change(IndexedSeq.fill(dimeOwed)(Dime())))
           amountOwed -= dimeOwed * 10
 
         }
@@ -202,7 +202,7 @@ class VendingMachine(modelName : String) extends Model {
       if (hasNickel) {
         //I have some quarters
         if (nickels.size < nickelOwed) {
-          val nickelReturn = Seq.fill(nickels.size)(Nickel())
+          val nickelReturn = IndexedSeq.fill(nickels.size)(Nickel())
           nickels.clear()
           nickelChangeOption = Some(Change(nickelReturn))
           amountOwed -= nickels.size * 5
@@ -210,7 +210,7 @@ class VendingMachine(modelName : String) extends Model {
         //I have all the quarters needed
         else {
           nickels.remove(0, nickelOwed)
-          nickelChangeOption = Some(Change(Seq.fill(nickelOwed)(Nickel())))
+          nickelChangeOption = Some(Change(IndexedSeq.fill(nickelOwed)(Nickel())))
           amountOwed -= nickelOwed * 5
         }
       }

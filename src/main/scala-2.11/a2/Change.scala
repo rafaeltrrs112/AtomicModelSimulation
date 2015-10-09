@@ -3,6 +3,6 @@ package a2
 /**
  *
  * @param change
- *                The sequence of coins release by the vending machine
+ *                The IndexedSequence of coins release by the vending machine
  */
-case class Change(change: Seq[Coin])
+case class Change(change: IndexedSeq[Coin])

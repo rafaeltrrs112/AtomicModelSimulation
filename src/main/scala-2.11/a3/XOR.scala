@@ -1,21 +1,25 @@
 package a3
 
-import raxsimulate.io.Token
+import raxsimulate.io.{Token, WrappedToken}
 import raxsimulate.model.Model
-import raxsimulate.Simulation
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
-case class XORToken(value : Boolean) extends Token
+case class XORToken(value: Boolean) extends Token
+object XORToken{
+  def apply(b : Boolean*) : IndexedSeq[XORToken] = b.map(XORToken(_)).toIndexedSeq
+}
+
 /**
- * Assignment 3 network xor.XOR model.
+ *
+ * @param modelName
  */
-class XORModel(modelName : String) extends Model() {
+class XORModel(modelName: String) extends Model() {
   override val name = modelName
 
-  var _currentOutput: Option[Seq[Token]] =
-    Some(ArrayBuffer[XORToken](XORToken(true)))
+  var _currentOutput: Option[IndexedSeq[Token]] = Some(ArrayBuffer[XORToken]())
+  var _currentState: mutable.Map[String, String] = mutable.Map[String, String]()
 
   /**
    *
@@ -23,32 +27,48 @@ class XORModel(modelName : String) extends Model() {
    * List of XOR tokens to process. True only if odd number of inputs are true
    *
    */
-  override def stateTransition(input: Seq[Token]): Unit = {
-    val result : Seq[XORToken] = {
-      input.map(_.asInstanceOf[XORToken])
+  override def stateTransition(input: IndexedSeq[Token]): Unit = {
+  println(name + " receiving " + input)
+    var result: mutable.ArrayBuffer[XORToken] = mutable.ArrayBuffer[XORToken]()
+
+    input.foreach { (token) => {
+      token match {
+        case WrappedToken(inputs) => inputs.foreach { (innerToken) => {
+          innerToken match {
+            case xor: XORToken =>
+              result += xor
+            }
+          }
+        }
+        case xor : XORToken => result += xor
+        }
+      }
     }
-    _currentOutput = Some(Seq[XORToken](result.foldLeft(XORToken(false))(XOR)))
+
+    _currentOutput = Some(IndexedSeq[XORToken](result.fold(XORToken(false))(XOR)))
     _currentState("Output: ") = _currentOutput.toString
   }
 
-  private def XOR(xOne : XORToken, xTwo : XORToken): XORToken ={
-    if ( (!xOne.value && xTwo.value) || (xOne.value && !xTwo.value) ) XORToken(true) else XORToken(false)
+
+  /*
+   *
+   */
+  private def XOR(xOne: XORToken, xTwo: XORToken): XORToken = {
+    if ((!xOne.value && xTwo.value) || (xOne.value && !xTwo.value)) XORToken(true) else XORToken(false)
   }
 
-  var _currentState: mutable.Map[String, String] = mutable.Map[String,String]()
-
   override def toString = "XOR\n" +
-                          "CurrentState: " + _currentState
+    "CurrentState: " + _currentState
 
-  override def currentOutput: Option[Seq[Token]] = _currentOutput
+  /**
+   *
+   * @return
+   */
+  override def currentOutput: Option[IndexedSeq[Token]] = _currentOutput
 
+  /**
+   *
+   * @return
+   */
   override def currentState: mutable.Map[String, String] = _currentState
-}
-
-/**
- * Test run of XOR atomic model.
- */
-object XORSimulationTest extends App {
-  val sim = new Simulation(new XORModel("O1"), mutable.Seq[Seq[Token]](Seq[Token](XORToken(false), XORToken(true)), Seq[Token]()))
-  sim.runSimulation()
 }

@@ -6,7 +6,7 @@ import raxsimulate.model.Model
 /**
  *
  */
-class Simulation(model: Model, inputs: Seq[Seq[Token]]) {
+class Simulation(model: Model, inputs: IndexedSeq[IndexedSeq[Token]]) {
 
   var tickNumber = 0
 
