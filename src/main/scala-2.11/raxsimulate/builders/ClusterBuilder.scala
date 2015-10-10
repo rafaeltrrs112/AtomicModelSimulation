@@ -1,12 +1,10 @@
 package raxsimulate.builders
 
-import raxsimulate.io.{WrappedToken, EmptyToken, Token}
 import raxsimulate.model.Model
 import raxsimulate.network.{NetworkModel, ConfigMap, RoutedCluster}
 
 import scala.collection.immutable.Map
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 
 /**
  * A linker class for use within the network model implementation.
