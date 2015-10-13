@@ -67,4 +67,5 @@ object XorNetwork extends App {
     )
   )
   simulator.runSimulation()
+
 }
