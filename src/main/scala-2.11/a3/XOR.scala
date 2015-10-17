@@ -7,8 +7,9 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 case class XORToken(value: Boolean) extends Token
-object XORToken{
-  def apply(b : Boolean*) : IndexedSeq[XORToken] = b.map(XORToken(_)).toIndexedSeq
+
+object XORToken {
+  def apply(b: Boolean*): IndexedSeq[XORToken] = b.map(XORToken(_)).toIndexedSeq
 }
 
 /**
@@ -36,12 +37,12 @@ class XORModel(modelName: String) extends Model() {
           innerToken match {
             case xor: XORToken =>
               result += xor
-            }
           }
         }
-        case xor : XORToken => result += xor
         }
+        case xor: XORToken => result += xor
       }
+    }
     }
 
     _currentOutput = Some(IndexedSeq[XORToken](result.fold(XORToken(false))(XOR)))

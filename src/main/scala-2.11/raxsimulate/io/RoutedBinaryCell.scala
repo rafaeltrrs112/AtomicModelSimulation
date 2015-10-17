@@ -1,8 +1,6 @@
 package raxsimulate.io
 
 import raxsimulate.model.Model
-
-import scala.collection.immutable.IntMap.Bin
 import scala.collection.mutable
 
 /**
@@ -21,15 +19,26 @@ case class RoutedBinaryCell(receiver : BinaryModel, neighbors: (BinaryModel, Bin
  */
 class OneTenExecutor(route : IndexedSeq[RoutedBinaryCell]) {
   def execute() = {
-    route.foreach { (cell) => {
+    route.foreach((cell) => {
+      val c = if (cell.receiver.currentOutput.head(0).asInstanceOf[OneTenToken].value == 0){
+        " "
+      } else {
+        "\u25AE"
+      }
+      print(c)
+    })
+    println()
+
+    val outputCollection = for(cell <- route) yield {
       val left = cell.neighbors._1
       val right = cell.neighbors._2
-      val output = OneTenWrap(left.currentOutput.get.head, right.currentOutput.get.head)
-      cell.receiver.stateTransition(IndexedSeq(output))
+      OneTenWrap(left.currentOutput.get.head, right.currentOutput.get.head)
+    }
+    val outPutIterator = outputCollection.iterator
+    route.foreach { (cell) => {
+      cell.receiver.stateTransition(IndexedSeq(outPutIterator.next()))
     }
     }
-    route.foreach { (cell) => {      println(cell.receiver.name + " outputting " + cell.receiver.currentOutput.get(0))
-    } }
   }
 }
 
@@ -52,44 +61,24 @@ class BinaryModel(modelName : String, init : OneTenToken) extends Model {
    * state.
    */
   override def stateTransition(input: IndexedSeq[Token]): Unit = {
-      input.foreach{ (token) =>{
+    input.foreach{ (token) =>{
         token match
         {
           case OneTenWrap((left :OneTenToken, right: OneTenToken)) => {
-            if (_currentOutput.value == 0){
-              if(left.value == 1){
-                if(right.value == 1){
-                  _currentOutput = OneTenToken(1)
-                }
-                else if(right.value == 0){
-                  _currentOutput = OneTenToken(0)
-                }
-              }
-              else if(left.value == 0){
-                if(right.value == 1){
-                  _currentOutput = OneTenToken(1)
-                }
-                else if(right.value == 0){
-                  _currentOutput = OneTenToken(0)
-                }
+            if(_currentOutput.value == 1){
+              (left.value, right.value) match {
+                case (0, 0) => _currentOutput = OneTenToken(1)
+                case (0, 1) => _currentOutput = OneTenToken(1)
+                case (1 ,0) => _currentOutput = OneTenToken(1)
+                case (1, 1) => _currentOutput = OneTenToken(0)
               }
             }
-            else if(_currentOutput.value == 1){
-              if(right.value == 1){
-                if(left.value == 1 ){
-                  _currentOutput = OneTenToken(0)
-                }
-                else if(left.value == 0){
-                  _currentOutput = OneTenToken(1)
-                }
-              }
-              else if(right.value == 0){
-                if(left.value == 1 ){
-                  _currentOutput = OneTenToken(1)
-                }
-                else if(left.value == 0){
-                  _currentOutput = OneTenToken(1)
-                }
+            else if(_currentOutput.value == 0){
+              (left.value, right.value) match {
+                case (0, 0) => _currentOutput = OneTenToken(0)
+                case (0, 1) => _currentOutput = OneTenToken(1)
+                case (1 ,0) => _currentOutput = OneTenToken(0)
+                case (1, 1) => _currentOutput = OneTenToken(1)
               }
             }
           }
@@ -129,3 +118,6 @@ object OneTenToken{
  * that can then be plugged into a the executor..
  * TODO Create builder for automating the creation of RoutedBinaryCells.
  */
+object test extends App {
+
+}

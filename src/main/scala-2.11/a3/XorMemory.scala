@@ -22,9 +22,11 @@ class XorMemory(modelName : String) extends Model {
     ("In memory:", inMemory.toString())
   )
 
+
   override def currentOutput : Option[IndexedSeq[Token]] = Some(IndexedSeq[XORToken](
     currentTop.getOrElse(XORToken(false)))
   )
+
 
   private def pushMemUp(xORToken: XORToken): Unit = {
     //Push top in memory up
@@ -60,7 +62,7 @@ class XorMemory(modelName : String) extends Model {
   }
 
 }
-object XorList {
+object XorList extends App {
 
   /**
    * Apply method for creating a list of XOR tokens
@@ -74,5 +76,6 @@ object XorList {
     val xorTokenList = for(value <- xorTokens) yield IndexedSeq(XORToken(value))
     xorTokenList.toIndexedSeq
   }
+
 
 }
