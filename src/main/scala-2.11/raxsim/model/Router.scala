@@ -1,6 +1,6 @@
-package raxsimulate.model
+package raxsim.model
 
-import raxsimulate.io.{ModelRouteConfig, EmptyToken, Token, WrappedToken}
+import raxsim.io.{ModelRouteConfig, EmptyToken, Token, WrappedToken}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer

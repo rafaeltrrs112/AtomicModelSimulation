@@ -1,6 +1,6 @@
-package raxsimulate.io
+package raxsim.io
 
-import raxsimulate.model.Model
+import raxsim.model.Model
 
 /**
  * Routed Models must be inserted into a router in the order of their output index

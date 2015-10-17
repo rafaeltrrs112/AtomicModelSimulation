@@ -1,10 +1,10 @@
 package a3
 
-import raxsimulate.Simulation
-import raxsimulate.builders.ClusterBuilder
-import raxsimulate.io.ModelRouteConfig
-import raxsimulate.model.{InputBuffer, Router}
-import raxsimulate.network.ConfigMap
+import raxsim.Simulation
+import raxsim.builders.ClusterBuilder
+import raxsim.io.ModelRouteConfig
+import raxsim.model.{InputBuffer, Router}
+import raxsim.network.ConfigMap
 
 import scala.collection.immutable.Map
 

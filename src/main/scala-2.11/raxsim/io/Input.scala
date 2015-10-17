@@ -1,4 +1,4 @@
-package raxsimulate.io
+package raxsim.io
 
 /**
  * All inputs can be outputted, but not all outputs can be inputted

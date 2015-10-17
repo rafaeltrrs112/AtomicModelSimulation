@@ -1,6 +1,6 @@
-package raxsimulate.model
+package raxsim.model
 
-import raxsimulate.io.{EmptyToken, Token}
+import raxsim.io.{EmptyToken, Token}
 
 /**
  * Model trait for the framework

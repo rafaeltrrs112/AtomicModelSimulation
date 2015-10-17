@@ -1,7 +1,7 @@
 package a3
 
-import raxsimulate.io.{EmptyToken, Token}
-import raxsimulate.model.{InputBuffer, Model}
+import raxsim.io.{EmptyToken, Token}
+import raxsim.model.{InputBuffer, Model}
 
 import scala.collection.mutable
 

@@ -1,7 +1,7 @@
 package a2
 
-import raxsimulate.Simulation
-import raxsimulate.io.Token
+import raxsim.Simulation
+import raxsim.io.Token
 
 import scala.collection.mutable.ArrayBuffer
 

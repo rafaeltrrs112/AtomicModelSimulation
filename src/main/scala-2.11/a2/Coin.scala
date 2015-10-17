@@ -1,6 +1,6 @@
 package a2
 
-import raxsimulate.io.Output
+import raxsim.io.Output
 
 /**
  * Helper object for the Coin class

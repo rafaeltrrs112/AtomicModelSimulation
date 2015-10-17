@@ -1,10 +1,10 @@
 //Note that all models have initial outputs. If at any time the output of a model is None it is
 //assumed that all of models linked to this model are designed to handle an instance of None at
 //any time in the simulation.
-package raxsimulate.network
+package raxsim.network
 
-import raxsimulate.io.{EmptyToken, Token}
-import raxsimulate.model.Model
+import raxsim.io.{EmptyToken, Token}
+import raxsim.model.Model
 
 import scala.collection.immutable.Map
 import scala.collection.mutable

@@ -1,7 +1,7 @@
-package raxsimulate.builders
+package raxsim.builders
 
-import raxsimulate.model.Model
-import raxsimulate.network.{NetworkModel, ConfigMap, RoutedCluster}
+import raxsim.model.Model
+import raxsim.network.{NetworkModel, ConfigMap, RoutedCluster}
 
 import scala.collection.immutable.Map
 import scala.collection.mutable

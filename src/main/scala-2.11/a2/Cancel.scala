@@ -1,6 +1,6 @@
 package a2
 
-import raxsimulate.io.Input
+import raxsim.io.Input
 
 /**
  *

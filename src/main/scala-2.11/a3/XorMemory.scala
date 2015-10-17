@@ -1,8 +1,8 @@
 package a3
 
-import raxsimulate.io.{EmptyToken, Token}
-import raxsimulate.model.Model
-import raxsimulate.Simulation
+import raxsim.io.{EmptyToken, Token}
+import raxsim.model.Model
+import raxsim.Simulation
 
 import scala.collection.mutable
 

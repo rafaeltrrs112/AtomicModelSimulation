@@ -1,7 +1,7 @@
 package a3
 
-import raxsimulate.io.{Token, WrappedToken}
-import raxsimulate.model.Model
+import raxsim.io.{Token, WrappedToken}
+import raxsim.model.Model
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer

@@ -1,4 +1,4 @@
-package raxsimulate
+package raxsim
 
 class XSimExecutor() {
 

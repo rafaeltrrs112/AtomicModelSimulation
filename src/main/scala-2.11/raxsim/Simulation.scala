@@ -1,7 +1,7 @@
-package raxsimulate
+package raxsim
 
-import raxsimulate.io.Token
-import raxsimulate.model.Model
+import raxsim.io.Token
+import raxsim.model.Model
 
 /**
  *

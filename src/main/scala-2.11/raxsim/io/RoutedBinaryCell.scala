@@ -1,6 +1,6 @@
-package raxsimulate.io
+package raxsim.io
 
-import raxsimulate.model.Model
+import raxsim.model.Model
 import scala.collection.mutable
 
 /**
