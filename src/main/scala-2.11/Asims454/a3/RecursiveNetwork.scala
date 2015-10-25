@@ -1,4 +1,4 @@
-package a3
+package Asims454.a3
 
 import raxsim.io.{EmptyToken, Token}
 import raxsim.model.{InputBuffer, Model}

@@ -42,6 +42,16 @@ class OneTenExecutor(route : IndexedSeq[RoutedBinaryCell]) {
   }
 }
 
+///**
+// *
+// * Executes a binary system like rule one ten.
+// *
+// */
+//trait Executor{
+//  val route : IndexedSeq[RoutedBinaryCell]
+//  def execute() : Unit
+//}
+
 class BinaryModel(modelName : String, init : OneTenToken) extends Model {
   override def name: String = modelName
 
