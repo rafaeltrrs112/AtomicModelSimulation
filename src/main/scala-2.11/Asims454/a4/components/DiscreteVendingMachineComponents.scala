@@ -10,11 +10,6 @@ import raxsim.model.{DiscreteEventModel, State}
 import scala.collection.immutable._
 import scala.collection.mutable
 
-/**
- */
-class DiscreteVendingMachineComponents {
-
-}
 object OutputBank {
   val bank : mutable.Queue[(Int, VendingMachineOutput)] = mutable.Queue[(Int, VendingMachineOutput)]()
 }
@@ -113,7 +108,6 @@ class VendingMachineModel(override val name : String, var _state : VendingMachin
   //Implicit elapsed time for the alarm
   implicit var elapsedTime : Int = 0
 
-
   override def lambda[C >: VendingMachineOutput](state : VendingMachineState) : VendingMachineOutput = {
     println("Lambda called at elapsed time : " + elapsedTime)
     if(alarm.ringing){
@@ -159,7 +153,7 @@ class VendingMachineModel(override val name : String, var _state : VendingMachin
     else deltaExternal(state, input, elapsedTime)
   }
 
-  override def deltaExternal[C <: VendingMachineInput](state: VendingMachineState, input: C, elapsedTime : Int): VendingMachineState = {
+  override def deltaExternal[C <: VendingMachineInput](state: VendingMachineState, input: C, elapsedTime : Int) : VendingMachineState = {
     alarm.set(2)
     val newUserCoins: Change = if (state.userCoins.isDefined) state.userCoins.get + input.input else new Change(IndexedSeq(input.input))
     increaseUserCoins(newUserCoins)
@@ -200,37 +194,11 @@ object VendingMachine {
 }
 object VendingMachineState {
   val DefaultState : VendingMachineState = {
-    VendingMachineState(ChangeBuilder(5,5,5,25,25,25,10,10,5), Some(ChangeBuilder(0)))
+    VendingMachineState(ChangeBuilder(5, 5, 5 , 25, 25, 25, 25, 25, 5, 5, 10 , 10 ,10, 10, 10, 10), Some(ChangeBuilder(0)))
   }
 }
 
-object DiscreteExecutor extends App {
-  def testExecute : Unit = {
-    var realWorldTime = 0
-    val model = new VendingMachineModel("vender")
-//      println(model.joinCoins(VendingMachineState.DefaultState))
-    println("Inital output of Vending Machine : " + model.lambda(model._state))
-    def execute(inputs : IndexedSeq[VendingMachineInput]): Unit = {
-      for (input <- inputs) {
-        realWorldTime = realWorldTime + input.second
-        println("User entering something at time : " + realWorldTime)
-        model._state = model.receive(input, input.second)
-        OutputBank.bank.enqueue((realWorldTime, model.lambda(model._state)))
-        model.lastEventTime = realWorldTime
-      }
-    }
-    val inputs = IndexedSeq[VendingMachineInput](VendingMachineInput(1, Quarter()), VendingMachineInput(5, Quarter()),
-    VendingMachineInput(1, Quarter()), VendingMachineInput(1, Quarter()), VendingMachineInput(1, Quarter()),
-    VendingMachineInput(6, Quarter()), VendingMachineInput(1, Quarter()))
-    execute(inputs)
-    println("Final state of the machine " + model.state)
-  }
 
-  testExecute
-  val outputs : mutable.Buffer[(Int, VendingMachineOutput)] =  OutputBank.bank.toBuffer
-  println(outputs.filter(_._2.isDefined))
-
-}
 
 
 

@@ -66,6 +66,7 @@ trait DiscreteEventModel[-I <: DiscreteTimeInput[InputOutput[Int]], +O <: InputO
   def deltaExternal[C <: I](state : S, input: C, elapsedTime : Int) : R //Changes the state of the model
 
   /**
+   * @deprecated
    * Receive input from outside the model.
    * @param input
    *              An input into the model.

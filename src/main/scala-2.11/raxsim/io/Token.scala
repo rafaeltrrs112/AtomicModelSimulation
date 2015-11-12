@@ -6,7 +6,15 @@ package raxsim.io
  * checking whether pattern matching is exhaustive.
  */
 trait Token
+
+/**
+ * @deprecated
+ */
 case class EmptyToken() extends Token
+
+/**
+ * @deprecated
+ */
 object EmptyToken{
   def emptyTokenIndexedSeq = IndexedSeq[Token](EmptyToken())
 }

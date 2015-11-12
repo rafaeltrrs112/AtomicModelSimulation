@@ -14,7 +14,8 @@ import raxsim.io.{Output, Token}
 import scala.collection.mutable
 
 /**
- * Model trait for the framework
+ * Model trait for the framework.
+ * @deprecated
  */
 trait Model {
 
@@ -36,7 +37,6 @@ trait Model {
 trait State {
   def map : scala.collection.immutable.Map[String, String]
 }
-
 
 trait AtomicModel[-I <: Token, +O <: Token]{
 

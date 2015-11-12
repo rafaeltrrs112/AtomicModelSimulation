@@ -8,8 +8,11 @@ import scala.collection.mutable
 /**
  *
  * @param modelName
+ *                  The name of the model.
  * @param receiver
+ *                 The receiver of the input.
  * @param memory
+ *               The memory module for this recursive network.
  */
 class RecursiveNetwork(modelName : String, receiver : Model, memory : InputBuffer) extends Model {
   var _currentOutput = IndexedSeq[Token]()
