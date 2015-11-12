@@ -2,8 +2,11 @@ package Asims454.a5.events
 
 import Asims454.a5._
 import scala.collection.mutable
-/**
- * 
+/*
+ * TODO Generalize for single generation networks.
+ * TODO Create Router, RouterConfig for the current discrete event model system.
+ * TODO Ensure that current system works with reflexive networks with Routers (influencers).
+ * TODO Clean up code and make scala-docs for new code.
  */
 object SimulationContext {
   //The universal priority queue used by the entire simulation.
