@@ -1,17 +1,19 @@
 package Asims454.a5.events
 
 import Asims454.a5._
-import raxsim.io.InputOutput
-
 import scala.collection.mutable
-import raxsim.model.{DiscreteTimeInput, DiscreteEventModel}
-
-object Context{
+/**
+ * 
+ */
+object SimulationContext {
   //The universal priority queue used by the entire simulation.
   val priorityQueue = EventQueue(mutable.PriorityQueue[Event]())
 }
 
-
+/**
+ * 
+ * @param events
+ */
 case class EventQueue(var events : mutable.PriorityQueue[Event]){
   def dump : Unit = while (events.nonEmpty) {
     val nextEvent = events.dequeue()
@@ -23,6 +25,9 @@ case class EventQueue(var events : mutable.PriorityQueue[Event]){
   def insertAll(e : Seq[Event]) = e.foreach(this.insert)
 }
 
+/**
+ * 
+ */
 trait Event extends Ordered[Event] {
   val priority : Int
   val message : String
@@ -30,17 +35,32 @@ trait Event extends Ordered[Event] {
   def compare(that : Event) : Int =  that.priority - this.priority
 }
 
-//Call's the curried lambda event and delta internal only...
+/**
+ * 
+ * @param priority
+ * @param message
+ * @param issuer
+ * @param context
+ */
 case class OutputEvent(override val priority : Int, override val message : String, issuer : DrillPress, context : EventQueue) extends Event {
   def execute : Unit =  {
+    //println("Parts count for :  " + issuer.name + " , is : " + issuer._state.parts.size)
     //If their are children of this model then branch out and create an input event for each one...
     if(issuer.subscribers.isDefined){
       //Call delta internal then update state print the output and time
       val currentQuery = priority
       issuer.queryTime = currentQuery
+      //Create and input event for all the models subscribed to this one...
       val output = issuer.lambda(issuer._state)
       issuer._state = issuer.deltaInternal(issuer._state)
-      println(issuer.name + " outputs " + output + " at " + priority)
+      val generatedInputEvents = for(subscribedModel <- issuer.subscribers.get) yield {
+        val stampedInput : DrillPressInput = output.toInput(priority)
+        val spawnedInputEvent : InputEvent = InputEvent(priority, stampedInput, subscribedModel, "", SimulationContext.priorityQueue)
+        println(stampedInput)
+        spawnedInputEvent
+      }
+      val printToConsole : String = issuer.name + " outputs " + output.toString + " to " + issuer.subscribers.get.head.name
+      context.insertAll(generatedInputEvents.toSeq)
     }
     else {
       //Call delta internal then update state print the output and time
@@ -57,33 +77,44 @@ case class OutputEvent(override val priority : Int, override val message : Strin
   }
 }
 
-//Call's delta external only.
+/**
+ * 
+ * @param priority
+ * @param input
+ * @param receiver
+ * @param message
+ * @param context
+ */
 case class InputEvent(override val priority : Int, input : DrillPressInput, receiver : DrillPress, override val message : String, context : EventQueue) extends Event {
   override def execute: Unit = {
-    println("in execute")
     //Take the input and pass it into the receiver then create an outPut event for each of the disks.
-    val range = priority + receiver.triggerTime until input.input.value * receiver.triggerTime + receiver.triggerTime
-    val timedParts = for(time <-  range by receiver.triggerTime) yield {
+    val start = priority + receiver.triggerTime
+    val end = if(input.input.value == 1) start + receiver.triggerTime else (input.input.value * receiver.triggerTime) + receiver.triggerTime
+    val timedParts = for(time <-  Range(start, end, receiver.triggerTime)) yield {
       input.input.parts.head.reStamp(stampTime = time)
     }
 
-    val timedInput = DrillPressInput(20, PartSet(mutable.PriorityQueue[Part]()))
+    val timedInput = DrillPressInput(priority, PartSet(mutable.PriorityQueue[Part]()))
     timedParts.foreach(timedInput.input.parts.enqueue(_))
 
     receiver._state = receiver.deltaExternal(receiver._state, timedInput, priority)
-    println(receiver._state)
 
-    val items = for(time <-  range by receiver.triggerTime) yield {
-      val output : OutputEvent = OutputEvent(time, "", receiver, Context.priorityQueue)
+    val outputEvents = for(time <-  Range(start, end, receiver.triggerTime)) yield {
+      val output : OutputEvent = OutputEvent(time, "", receiver, SimulationContext.priorityQueue)
       output
     }
-    Context.priorityQueue.insertAll(items.toSeq)
-    println(items)
+    println(receiver.name + " receives " + timedInput + " at " + priority)
+    SimulationContext.priorityQueue.insertAll(outputEvents.toSeq)
     receiver.lastEventTime = priority
   }
 }
 
-//Call's delta confluent -> lambda -> delta-internal -> delta-external
+/**
+ * 
+ * @param oI
+ * @param priority
+ * @param message
+ */
 case class ConfluentEvent(oI : (OutputEvent, InputEvent), priority : Int, message : String) extends Event {
   def execute : Unit = {
     oI._1.execute

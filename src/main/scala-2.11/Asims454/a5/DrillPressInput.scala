@@ -108,7 +108,7 @@ class AlarmClock(val triggerTime : Int){
 }
 
 class DrillPress(var defaultState : DrillPressState, override val name : String) extends DiscreteEventModel[DrillPressInput, DrillPressOutput, DrillPressState, Part, DrillPressState]{
-  val subscribers : Option[collection.immutable.Set[DrillPress]] = None
+  var subscribers : Option[collection.immutable.Set[DrillPress]] = None
   override var triggerTime: Int = 120
   //don't user lastEventTime
   override var lastEventTime: Int = 0
@@ -150,7 +150,7 @@ class DrillPress(var defaultState : DrillPressState, override val name : String)
      * The elapsed time plus the state's time MUST BE LESS THAN THE TRIGGER TIME -> DELTA EXTERNAL SHOULD NOT BE CALLED FOR ANY TYPE OF
      * EVENT OTHER THAN INTERNAL STATE AGGREGATION...OUTPUT IS HANDLED BY INTERNAL...
      */
-    if(elapsedTime > triggerTime) throw new InvalidDeltaCallException("Delta called at or past " + triggerTime)
+    //if(elapsedTime > triggerTime) throw new InvalidDeltaCallException("Delta called at or past " + triggerTime)
     state.join(input.input , elapsedTime)
   }
 
@@ -250,12 +250,14 @@ object Simulation extends App {
 
   val press = new DrillPress(DrillPressState(0, mutable.PriorityQueue[Part]()), "Press Prototype")
   val drill = new DrillPress(DrillPressState(0, mutable.PriorityQueue[Part]()), "Drill Prototype")
+  press.subscribers = Some(Set(drill))
 
-
-  val input = DrillPressInput(20, PartSet(mutable.PriorityQueue(Disk(0), Disk(0), Disk(0), Disk(0))))
+  val pressInputs = DrillPressInput(20, PartSet(mutable.PriorityQueue(Ball(0), Ball(0), Ball(0), Ball(0))))
   //println(Seq[Disk](Disk(), Disk()).size)
-  InputEvent(20, input, drill, drill.name + " receiving batch input ", Context.priorityQueue).execute
-  Context.priorityQueue.dump
+  InputEvent(20, pressInputs, press, press.name + " receiving batch input ", SimulationContext.priorityQueue).execute
+  SimulationContext.priorityQueue.dump
+  println(SimulationContext.priorityQueue.events.size)
+  println(drill._state.parts.size)
   //Context.priorityQueue
   //println(drill.triggerTime)
 }
