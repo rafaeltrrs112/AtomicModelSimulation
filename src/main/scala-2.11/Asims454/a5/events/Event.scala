@@ -7,6 +7,11 @@ import scala.collection.mutable
  * TODO Create Router, RouterConfig for the current discrete event model system.
  * TODO Ensure that current system works with reflexive networks with Routers (influencers).
  * TODO Clean up code and make scala-docs for new code.
+ * TODO Bonus : Make...drag drop factory gui in GTK for experimental purposes.
+ */
+
+/**
+ *
  */
 object SimulationContext {
   //The universal priority queue used by the entire simulation.
@@ -62,7 +67,6 @@ case class OutputEvent(override val priority : Int, override val message : Strin
         println(stampedInput)
         spawnedInputEvent
       }
-      val printToConsole : String = issuer.name + " outputs " + output.toString + " to " + issuer.subscribers.get.head.name
       context.insertAll(generatedInputEvents.toSeq)
     }
     else {
