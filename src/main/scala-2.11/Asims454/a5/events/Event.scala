@@ -44,11 +44,16 @@ trait Event extends Ordered[Event] {
 }
 
 /**
- * 
- * @param priority
- * @param message
+  * Event of type output. Retrieves some output from the issuer model. If the receiver has any subscribers, input events are spawned with priorities
+  * set at the expected output time.
+  * @param priority
+  *                 The real time this event is occurring.
+  * @param message
+  *                The message to print when this event occurs if any.
  * @param issuer
+  *               The model outputting some value at this time.
  * @param context
+  *                The context queue the event was spawned into. Any output events spawned by this event.
  */
 case class OutputEvent(override val priority : Int, override val message : String, issuer : DrillPress, context : EventQueue) extends Event {
   def execute : Unit =  {
@@ -85,12 +90,18 @@ case class OutputEvent(override val priority : Int, override val message : Strin
 }
 
 /**
- * 
- * @param priority
- * @param input
- * @param receiver
- * @param message
- * @param context
+  * Event of type input. Inserts some input into a receiver. An output event is spawned at an interval with a step of the trigger time
+  * for retrieving the inevitable output from this model later on in the event queue.
+  * @param priority
+  *                 The real time this event is occurring.
+  * @param input
+  *              The input into the receiver.
+  * @param receiver
+  *                 The model receiving the input.
+  * @param message
+  *                The message to print when this event occurs if any.
+  * @param context
+  *                The context queue the event was spawned into. Any output events spawned by this event.
  */
 case class InputEvent(override val priority : Int, input : DrillPressInput, receiver : DrillPress, override val message : String, context : EventQueue) extends Event {
   override def execute: Unit = {
@@ -106,7 +117,7 @@ case class InputEvent(override val priority : Int, input : DrillPressInput, rece
 
     receiver._state = receiver.deltaExternal(receiver._state, timedInput, priority)
 
-    val outputEvents = for(time <-  Range(start, end, receiver.triggerTime)) yield {
+    val outputEvents : IndexedSeq[OutputEvent] = for(time <-  Range(start, end, receiver.triggerTime)) yield {
       val output : OutputEvent = OutputEvent(time, "", receiver, SimulationContext.priorityQueue)
       output
     }
@@ -115,16 +126,41 @@ case class InputEvent(override val priority : Int, input : DrillPressInput, rece
     receiver.lastEventTime = priority
   }
 }
+object ConfluentEvent{
+  def apply(confluentBlock : => Unit, priority : Int, message : String) : ConfluentEvent = new ConfluentEvent(confluentBlock, priority, message)
+}
 
 /**
- * 
- * @param oI
- * @param priority
- * @param message
- */
-case class ConfluentEvent(oI : (OutputEvent, InputEvent), priority : Int, message : String) extends Event {
-  def execute : Unit = {
-    oI._1.execute
-    oI._2.execute
+  * Holds the by name block that defines what the confluent event is for for a specific model.
+  * @param confluentBlock
+  *                        The by name block reference that executes the confluent case for a model.
+  * @param priority
+  *                 The real world time the event occurred.
+  * @param message
+  *                The message to print when this event occurs if any.
+  */
+class ConfluentEvent(confluentBlock : => Unit, override val priority : Int, override val message : String) extends Event {
+  def execute : Unit = confluentBlock
+}
+
+
+
+
+object testConfluentEvent extends App {
+  var someVal : Int = 10
+  val confEvent = ConfluentEvent ({
+    someVal += 10
+    val value : Int = someVal
+    println(value)
+  }, 10, "")
+
+  confEvent.execute
+  confEvent.execute
+  confEvent.execute
+
+  def composeConfluent(priority : Int, events : Event*) = {
+    ConfluentEvent({for(event <- events){
+      event.execute
+    }}, priority, "")
   }
 }
