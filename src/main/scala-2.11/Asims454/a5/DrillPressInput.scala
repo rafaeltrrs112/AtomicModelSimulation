@@ -6,12 +6,33 @@ import raxsim.model.{DiscreteEventModel, DiscreteTimeInput, _}
 
 import scala.collection.mutable
 
+/**
+  * Traits describing parts that can be entered into a machine.
+  */
 sealed trait Part extends raxsim.io.Token with InputOutput[Int] with Ordered[Part] {
+  /**
+    * The integer tag value of this token.
+    */
   val value: Int
+
+  /**
+    * The time to stamp on this token.
+    */
   val stampTime: Int
 
+  /**
+    *
+    * @param stampTime
+    *                  The time to stamp on the part.
+    * @return
+    *         A part with that time stamped on it.
+    */
   def reStamp(stampTime: Int): Part
 
+  /**
+    *
+    * @inheritdoc
+    */
   override def toString = {
     value match {
       case 0 => "Ball"
@@ -20,17 +41,40 @@ sealed trait Part extends raxsim.io.Token with InputOutput[Int] with Ordered[Par
     }
   }
 
+  /**
+    *
+    * @inheritdoc
+    */
   def compare(that: Part): Int = that.stampTime - this.stampTime
 
+  /**
+    * Return the type of part that this part can be processed to.
+    * @return
+    *          This part's processed version.
+    */
   def process: Part
 }
 
+/**
+  * A ball that can be inserted into a press.
+  * @param stampTime
+  *                  The time stamped on this part.
+  * @param value
+  *              This part's tag value.
+  */
 case class Ball(override val stampTime: Int, override val value: Int = 0) extends Part {
   override def process: Part = Disk(stampTime + 120)
 
   override def reStamp(stampTime: Int): Part = Ball(stampTime)
 }
 
+/**
+  * A disk that can be inserted into a drill.
+  * @param stampTime
+  *                  The time stamped on this part.
+  * @param value
+  *              This part's tag value.
+  */
 case class Disk(override val stampTime: Int, override val value: Int = 1) extends Part {
   override def process: Part = Washer(stampTime + 120)
 
@@ -38,6 +82,13 @@ case class Disk(override val stampTime: Int, override val value: Int = 1) extend
 
 }
 
+/**
+  * Washer outputted by a drill.
+  * @param stampTime
+  *                  The time stamped on this part.
+  * @param value
+  *              This part's tag value.
+  */
 case class Washer(override val stampTime: Int, override val value: Int = 2) extends Part {
   override def process: Part = Washer(stampTime + 120)
 
@@ -45,6 +96,11 @@ case class Washer(override val stampTime: Int, override val value: Int = 2) exte
 
 }
 
+/**
+  * A set of parts held in the state of a machine.
+  * @param parts
+  *              The parts contained by this set.
+  */
 case class PartSet(parts: collection.mutable.PriorityQueue[Part]) extends InputOutput[Int] {
   override def value: Int = parts.size
 }
@@ -52,17 +108,30 @@ case class PartSet(parts: collection.mutable.PriorityQueue[Part]) extends InputO
 /**
   * An input class wrapper for a drill or press model.
   * @param second
- * Deprecated
+ *      Deprecated.
   * @param input
  * A set of parts being inputted into a drill or press model.
   */
 class DrillPressInput(override val second: Int, override val input: PartSet) extends DiscreteTimeInput[PartSet](second, input)
 
+/**
+  * The input into a drill or press.
+  */
 object DrillPressInput {
   def apply(second: Int, input: PartSet): DrillPressInput = new DrillPressInput(second, input)
 }
 
+/**
+  * The output of a drill or press.
+  * @param part
+  *             A part processed by a machine.
+  */
 case class DrillPressOutput(part: Part) extends InputOutput[Int] {
+  /**
+    * Determine part value.
+    * @return
+    *         The value of this part.
+    */
   override def value: Int =
     part match {
       case Ball(_, _) => 0
@@ -70,6 +139,13 @@ case class DrillPressOutput(part: Part) extends InputOutput[Int] {
       case Washer(_, _) => 2
     }
 
+  /**
+    * Converts this output into a type that can be inputted into another machine.
+    * @param stampTime
+    *                  The time to stamp on this part.
+    * @return
+    *         An input created from this output.
+    */
   def toInput(stampTime: Int): DrillPressInput = {
     val input = value match {
       case 0 => Ball(stampTime)
@@ -80,7 +156,13 @@ case class DrillPressOutput(part: Part) extends InputOutput[Int] {
   }
 }
 
-//TODO add to the State trait a join method that returns a new state...essentially a lambda for the state
+/**
+  * The state of a drill or press. Contains the currently unprocessed parts.
+  * @deprecated @param seconds
+  *                The real world time known by this machine.
+  * @param parts
+  *              The parts contained in this machines bag.
+  */
 case class DrillPressState(var seconds: Int, parts: mutable.PriorityQueue[Part]) extends State {
   val DefaultSeconds = 0
 
@@ -88,6 +170,15 @@ case class DrillPressState(var seconds: Int, parts: mutable.PriorityQueue[Part])
 
   val size: Int = parts.size
 
+  /**
+    * Helper method for delta external methods.
+    * @param partSet
+    *                A set of parts.
+    * @param elapsedTime
+    *                    The time elapsed since last input.
+    * @return
+    *         Returns the new state joined with the input coming in. Used by delta external usually.
+    */
   def join(partSet: PartSet, elapsedTime: Int) = {
     val joinedParts: mutable.PriorityQueue[Part] = parts ++ partSet.parts
     val newDiscreteTime: Int = this.seconds + elapsedTime
@@ -95,31 +186,49 @@ case class DrillPressState(var seconds: Int, parts: mutable.PriorityQueue[Part])
     DrillPressState(newDiscreteTime, joinedParts)
   }
 
+  /**
+    * Helper method for delta internal to reduce the queue by one part.
+    * @return
+    *         A reduced state assuming output (delta internal transition) call.
+    */
   def reduced(): DrillPressState = {
     parts.dequeue()
     DrillPressState(DefaultSeconds, parts)
   }
 }
 
-class AlarmClock(val triggerTime: Int) {
-  var timeSet: Int = 0
-
-  def reset(currentTime: Int) = {
-    timeSet = currentTime
-  }
-
-  def isRinging(currentTime: Int): Boolean = currentTime - timeSet > triggerTime
-}
-
+/**
+  * A machine that takes two seconds to process an input.
+  * @param defaultState
+  *                     The default state of the machine
+  * @param name
+  *             The name of the machine.
+  */
 class DrillPress(var defaultState: DrillPressState, override val name: String) extends DiscreteEventModel[DrillPressInput, DrillPressOutput, DrillPressState, Part, DrillPressState] {
+  /**
+    * The children/mode's subsribed to this model. Used as an alternative to the network builder.
+    */
   var subscribers: Option[collection.immutable.Set[DrillPress]] = None
+
+  /**
+    * The trigger time for this model's internal clock.
+    */
   override var triggerTime: Int = 120
-  //don't user lastEventTime
+
+  /**
+    * @deprecated
+    */
   override var lastEventTime: Int = 0
+
+  /**
+    * Time stamp for checking if a valid call is being made from outside the model. Used to
+    * determine when and how to throw exceptions.
+    */
   var queryTime: Int = 0
-  /*
-   * TODO, deprecate, the state holds the discrete time, the real time an output is produced is handled from the outside.
-   * */
+
+  /**
+    * The variable holding the current state value.
+    */
   var _state: DrillPressState = defaultState
 
   /**
@@ -147,14 +256,7 @@ class DrillPress(var defaultState: DrillPressState, override val name: String) e
     /*
      * Delta external takes in the current state of the machine, and input into the machine, and the elapsed time since an input was
      * last entered in to the machine
-     *
-     * Logic -> A new state is created by calling join on the state which takes in an input and some elapsed time and creates a new state
-     * with the inputs added to the machines input pool, and the internal time of the machine increase by the value of the elapsed time.
-     *
-     * The elapsed time plus the state's time MUST BE LESS THAN THE TRIGGER TIME -> DELTA EXTERNAL SHOULD NOT BE CALLED FOR ANY TYPE OF
-     * EVENT OTHER THAN INTERNAL STATE AGGREGATION...OUTPUT IS HANDLED BY INTERNAL...
      */
-    //if(elapsedTime > triggerTime) throw new InvalidDeltaCallException("Delta called at or past " + triggerTime)
     state.join(input.input, elapsedTime)
   }
 
@@ -168,7 +270,6 @@ class DrillPress(var defaultState: DrillPressState, override val name: String) e
    * The new State of the model.
     */
   override def deltaInternal(state: DrillPressState): DrillPressState = {
-
     /*
      * Delta internal takes in the current state of the machine, and determines from that state what output has been produced and
      * how the creation of that output alters the state.
@@ -181,6 +282,39 @@ class DrillPress(var defaultState: DrillPressState, override val name: String) e
      * exception.
      */
     state.reduced()
+  }
+
+  /**
+    * Creates tickets for input.
+    * @param insertTime
+    *                   The time some number of inputs are inserted.
+    * @param numberInputs
+    *                     The number of inputs inserted.
+    * @return
+    *         A set of tickets for all inputs inserted.
+    */
+  def getTicketSet(insertTime : Int, numberInputs : Int) : IndexedSeq[Int] = {
+    if(_state.parts.nonEmpty){
+      val lateness = Math.abs(insertTime - _state.parts.last.stampTime)
+      val firstOutputTime = lateness + insertTime + triggerTime
+
+      val lastOutputTime = firstOutputTime + (triggerTime * (numberInputs - 1))
+
+      val rangeValue = for(time <- firstOutputTime to  lastOutputTime by triggerTime) yield {
+        time
+      }
+
+      rangeValue
+
+    }
+    else {
+      val firstOutputTime = insertTime + triggerTime
+      val lastOutputTime = triggerTime * numberInputs + insertTime
+      val rangeValue = for(time <- firstOutputTime to lastOutputTime by 120) yield {
+        time
+      }
+      rangeValue
+    }
   }
 
   /**
@@ -209,7 +343,7 @@ class DrillPress(var defaultState: DrillPressState, override val name: String) e
     */
   override def lambda[C >: DrillPressOutput](state: DrillPressState): C = {
     if (state.parts.head.stampTime != queryTime) {
-      throw new InvalidLambdaCallException("Lambda called before " + triggerTime + " TRIGGER_TIME")
+      //throw new InvalidLambdaCallException("Lambda called before " + triggerTime + " TRIGGER_TIME")
     }
     DrillPressOutput(state.parts.head.process)
   }
@@ -240,29 +374,45 @@ class DrillPress(var defaultState: DrillPressState, override val name: String) e
   }
 }
 
+/**
+  * An exception to throw when an invalid delta call is made from outside the model.
+  * @param message
+  *                The message to print.
+  */
 case class InvalidDeltaCallException(message: String) extends Exception {
   override def toString = message
 }
 
+/**
+  * An exception to throw when an invalid lambda call is made from outside the model.
+  * @param message
+  *                The message to print.
+  */
 case class InvalidLambdaCallException(message: String) extends Exception {
   override def toString = message
 }
 
 object Simulation extends App {
+
   val EventQueue = {
     new EventQueue(mutable.PriorityQueue[Event]())
   }
 
   val press = new DrillPress(DrillPressState(0, mutable.PriorityQueue[Part]()), "Press Prototype")
   val drill = new DrillPress(DrillPressState(0, mutable.PriorityQueue[Part]()), "Drill Prototype")
+
   press.subscribers = Some(Set(drill))
 
+  //Initial input into the drill
   val pressInputs = DrillPressInput(20, PartSet(mutable.PriorityQueue(Ball(0), Ball(0), Ball(0), Ball(0))))
-  //println(Seq[Disk](Disk(), Disk()).size)
-  InputEvent(20, pressInputs, press, press.name + " receiving batch input ", SimulationContext.priorityQueue).execute
+
+  //Input into the drill to test the confluent case.
+  val pressInputConf = DrillPressInput(140, PartSet(mutable.PriorityQueue(Ball(0), Ball(0))))
+
+  //Insert both events into the queue.
+  SimulationContext.priorityQueue.insert(InputEvent(20, pressInputs, press, press.name, SimulationContext.priorityQueue))
+  SimulationContext.priorityQueue.insert(InputEvent(140, pressInputConf, press, press.name, SimulationContext.priorityQueue))
+
+  //Begin the simulation by executing all events until finish.
   SimulationContext.priorityQueue.dump
-  println(SimulationContext.priorityQueue.events.size)
-  println(drill._state.parts.size)
-  //Context.priorityQueue
-  //println(drill.triggerTime)
 }

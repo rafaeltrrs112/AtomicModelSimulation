@@ -1,51 +1,81 @@
+/**
+  * Assignment 5 : New features for the simulation framework.
+  */
 package Asims454.a5.events
 
 import Asims454.a5._
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
-
-/*
- * TODO Generalize for single generation networks.
- * TODO Create Router, RouterConfig for the current discrete event model system.
- * TODO Ensure that current system works with reflexive networks with Routers (influencers).
- * TODO Clean up code and make scala-docs for new code.
- * TODO Bonus : Make...drag drop factory gui in GTK for experimental purposes.
- */
 
 /**
- *
+ * The Context holding the priority queue(s) used by all simulations running during this instance.
  */
 object SimulationContext {
-  //The universal priority queue used by the entire simulation.
+  /**
+    *   The universal priority queue used by the entire simulation.
+    */
   val priorityQueue = EventQueue(mutable.PriorityQueue[Event]())
 }
 
 /**
- * 
+ * The event queue handler class.
  * @param events
+  *               A priority queue of events.
  */
 case class EventQueue(var events : mutable.PriorityQueue[Event]){
+  /**
+    * Continuously spills out the contents of the queue until no more events are being registered in it.
+    */
   def dump : Unit = while (events.nonEmpty) {
     val nextEvent = events.dequeue()
-    println(nextEvent.name)
-    nextEvent.execute
-  }
-  def act : Unit = events.dequeue().execute
-  def insert(e : Event) : Unit = {
-    val queueAsArrayBuffer : mutable.Buffer[Event] = events.toBuffer
-    val existingBindable : Option[Event] = queueAsArrayBuffer.find(canJoin(e, _))
+    val existingBindable = events.find(canJoin(nextEvent, _))
     if(existingBindable.isDefined){
-      val orderedConfluent : (OutputEvent, InputEvent) = orderedConfluentPair(e, existingBindable.get)
-      //println("Confluent events : " + orderedConfluent)
+
+      println("Confluent case occurring at time " + nextEvent.priority + " for Model["+nextEvent.name+"]");
+
+      val orderedConfluent : (OutputEvent, InputEvent) = orderedConfluentPair(nextEvent, existingBindable.get)
+      events = events.filterNot(_ == existingBindable.get)
+      val confluentCase = ConfluentEvent({
+        orderedConfluent._1.execute
+        orderedConfluent._2.execute
+      }, nextEvent.priority, orderedConfluent._1.name)
+      confluentCase.execute
+    } else{
+      println(nextEvent.name)
+      nextEvent.execute
     }
+  }
 
+  /**
+    * Executes the next event in the priority queue.
+    */
+  def act : Unit = events.dequeue().execute
+
+  /**
+    * @param e
+    *          The event being inserted into the priority queue.
+    */
+  def insert(e : Event) : Unit = {
     //If event is of type input get all input events with the same model and pass them to input events join method...
-
     events.enqueue(e)
   }
 
-  def insertAll(e : Seq[Event]) = e.foreach(this.insert)
+  /**
+    * Inserts a sequence of events into the queue.
+    * @param e
+    *          Some traversable collection of events.
+    */
+  def insertAll(e : Traversable[Event]) = e.foreach(this.insert)
 
+  /**
+    * Defines whether one event due for execution is confluent with another event due for execution at the same time.
+    * @param incoming
+    *                 Returns a boolean if these non-confluent events can be joined together into
+    *                 a confluent event.
+    * @param existing
+    *                 The event being compared from within the queue.
+    * @return
+    *         True if these two events can be joined.
+    */
   def canJoin(incoming : Event, existing : Event) : Boolean = {
     incoming match {
       case OutputEvent(existing.priority, existing.name, _, _) => existing match {
@@ -60,6 +90,15 @@ case class EventQueue(var events : mutable.PriorityQueue[Event]){
     }
   }
 
+  /**
+    * Joins two events together as a confluent pair.
+    * @param incoming
+    *                 An event due for execution.
+    * @param existing
+    *                 An event due for execution.
+    * @return
+    *         Both events bound together as their confluent case.
+    */
   def orderedConfluentPair(incoming : Event, existing : Event) : (OutputEvent, InputEvent) = {
     incoming match {
       case outputEvent : OutputEvent => existing match {
@@ -74,12 +113,26 @@ case class EventQueue(var events : mutable.PriorityQueue[Event]){
 }
 
 /**
- *
+ * Trait for events than can be placed in an event cue and excuted in some fashion.
  */
 trait Event extends Ordered[Event] {
+  /**
+    * The real time this event is occuring.
+    */
   val priority : Int
+  /**
+    * The name of the model making the output.
+    */
   val name : String
+
+  /**
+    * Executes the event. Similar to run in runnable.
+    */
   def execute : Unit
+
+  /**
+    * @inheritdoc
+    */
   def compare(that : Event) : Int =  that.priority - this.priority
 }
 
@@ -96,6 +149,9 @@ trait Event extends Ordered[Event] {
   *                The context queue the event was spawned into. Any output events spawned by this event.
  */
 case class OutputEvent(override val priority : Int, override val name : String, issuer : DrillPress, context : EventQueue) extends Event {
+  /**
+    * @inheritdoc
+    * */
   def execute : Unit =  {
     //println("Parts count for :  " + issuer.name + " , is : " + issuer._state.parts.size)
     //If their are children of this model then branch out and create an input event for each one...
@@ -125,6 +181,11 @@ case class OutputEvent(override val priority : Int, override val name : String, 
     }
   }
 
+  /**
+    * The string representation of this class.
+    * @return
+    *         The string containing information about the event. The context queue is not outputted due to stack overflow.
+    */
   override def toString : String = {
     "OutputEvent("+priority+","+name+","+issuer+",contextSize:"+context.events.size+")"
   }
@@ -145,6 +206,9 @@ case class OutputEvent(override val priority : Int, override val name : String, 
   *                The context queue the event was spawned into. Any output events spawned by this event.
  */
 case class InputEvent(override val priority : Int, input : DrillPressInput, receiver : DrillPress, override val name : String, context : EventQueue) extends Event {
+  /**
+    * @inheritdoc
+    */
   override def execute : Unit = {
     //Take the input and pass it into the receiver then create an outPut event for each of the disks.
     val timeRange = receiver.getTicketSet(priority, input.input.value)
@@ -168,8 +232,12 @@ case class InputEvent(override val priority : Int, input : DrillPressInput, rece
 
   }
 }
+
+/**
+  * Creates a confluent event.
+  */
 object ConfluentEvent{
-  def apply(confluentBlock : => Unit, priority : Int, message : String) : ConfluentEvent = new ConfluentEvent(confluentBlock, priority, message)
+  def apply(confluentBlock : => Unit, priority : Int, name : String) : ConfluentEvent = new ConfluentEvent(confluentBlock, priority, name)
 }
 
 /**
@@ -183,23 +251,4 @@ object ConfluentEvent{
   */
 class ConfluentEvent(confluentBlock : => Unit, override val priority : Int, override val name : String) extends Event {
   def execute : Unit = confluentBlock
-}
-
-object testConfluentEvent extends App {
-  var someVal : Int = 10
-  val confEvent = ConfluentEvent ({
-    someVal += 10
-    val value : Int = someVal
-    println(value)
-  }, 10, "")
-
-  confEvent.execute
-  confEvent.execute
-  confEvent.execute
-
-  def composeConfluent(priority : Int, events : Event*) = {
-    ConfluentEvent({for(event <- events){
-      event.execute
-    }}, priority, "")
-  }
 }
